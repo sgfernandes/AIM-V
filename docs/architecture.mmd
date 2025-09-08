@@ -1,0 +1,53 @@
+flowchart LR
+  subgraph Ingestion_RAG["Ingestion & RAG"]
+    A["ITV Validation Full Reports & Summaries<br/>Standards & Guidelines"] --> P[Parsers / Chunkers]
+    P --> V[(ChromaDB Vector Store)]
+  end
+
+  subgraph Backend["Backend (FastAPI)"]
+    B1[Technology Service]
+    B2[Validation Service]
+    B3[RAG Service]
+    B4[Reporting Service]
+    B5["Monitoring / Telemetry"]
+  end
+
+  subgraph Agents[LLM Agents]
+    L1[Screening Agent]
+    L2[M&V Planning Agent]
+    L3[Analysis Agent]
+    L4[Report Writer]
+  end
+
+  subgraph DataLayer[Data Layer]
+    D1[(PostgreSQL)]
+    D2[(Redis Cache)]
+    V
+  end
+
+  subgraph TrainEval["Training & Evaluation"]
+    T1[Corpus Builder]
+    T2[SFT Trainer]
+    T3["DPO/ORPO RLHF"]
+    T4["Eval Harness<br/>(Rubrics + Metrics)"]
+    T5[Human Review UI]
+  end
+
+  UI["Admin / Dashboard UI"]
+
+  UI <--> Backend
+  Backend <--> DataLayer
+  Agents <--> B3
+  B1 <--> D1
+  B2 <--> D1
+  B3 <--> V
+  B4 <--> D1
+  B5 <--> D2
+
+  Ingestion_RAG --> V
+  T1 --> V
+  T1 --> Datasets
+  Datasets --> T2 --> T3 --> DeployedModels
+  DeployedModels --> Agents
+  T4 --> Reports
+  T5 --> Preferences --> T3

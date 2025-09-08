@@ -1,0 +1,30 @@
+[
+  {
+    "id": "toyota-cooling-tower-ecf",
+    "prompt": {
+      "technology": "Electrochemical water filtration on open-loop cooling tower",
+      "site": "Automotive assembly plant in humid climate",
+      "objectives": ["Reduce energy via improved heat transfer", "Reduce water and chemical use"],
+      "constraints": ["Maintain water chemistry", "No impact on production"],
+      "context": {
+        "baseline_period": "2023-05 to 2023-08",
+        "production_normalization": true,
+        "sensors_available": ["makeup flow", "blowdown flow", "conductivity", "chiller kW", "tower fan kW"]
+      }
+    },
+    ``
+    "good_plan": {
+      "baseline": {"period": "90 days", "methods": ["matched ambient conditions", "production normalization"]},
+      "measurement": {"interval": "1-min", "instruments": ["calibrated flow meters", "power meters", "water chemistry"]},
+      "boundary": "Tower, heat exchangers, associated pumps/fans; exclude process-side loads",
+      "analysis": {"method": "Option B", "metrics": ["kWh saved", "water saved", "chemicals reduced"], "uncertainty": "bootstrap CI"},
+      "safety": ["Lockout/Tagout for installs", "Chemical handling procedures"],
+      "reporting": ["Data dictionary", "QA/QC logs", "Normalization details", "Savings calc formulas"]
+    },
+    "bad_plan": {
+      "baseline": {"period": "1 day"},
+      "measurement": {"interval": "hourly", "instruments": ["unknown"]},
+      "analysis": {"method": "N/A"}
+    }
+  }
+]
