@@ -8,6 +8,7 @@ Contents
 - `data/` — storage for ingested reports and training data
 - `docs/` — architecture, M&V summary and training notes
 - `training/` — SFT + RLHF scaffolds and evaluation harness
+- `docs/itv_mv_system_architecture.md` — ITV M&V multi-agent system architecture diagram
 
 Quick start
 
@@ -15,11 +16,13 @@ Quick start
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-# Prepare example training corpus
-python training/scripts/prepare_corpus.py
-# Run quick eval harness
-python training/scripts/eval_run.py
+# Run backend API
+uvicorn backend.app.main:app --reload
 ```
+
+API endpoints
+- `GET /health` — service health check
+- `POST /chat` — orchestrates user prompts to Strategy, Analytics, or Documentation agent
 
 Contributing
 - Open issues and PRs on GitHub. Create topic branches and include tests where appropriate.
