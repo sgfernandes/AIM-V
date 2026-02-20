@@ -1,15 +1,14 @@
+from typing import Any, Dict
+
 from pydantic import BaseModel, Field
-
-
-class HealthResponse(BaseModel):
-    status: str = "ok"
 
 
 class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1, description="User chat input")
+    context: Dict[str, Any] = Field(default_factory=dict)
 
 
 class ChatResponse(BaseModel):
-    engine: str
+    agent: str
     intent: str
-    response: str
+    result: Dict[str, Any]

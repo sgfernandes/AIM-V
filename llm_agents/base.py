@@ -1,17 +1,10 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-
-
-@dataclass
-class AgentResult:
-    engine: str
-    intent: str
-    response: str
+from typing import Any, Dict
 
 
 class BaseAgent(ABC):
-    name: str
+    name: str = "base"
 
     @abstractmethod
-    def handle(self, message: str) -> AgentResult:
-        raise NotImplementedError
+    def run(self, message: str, context: Dict[str, Any]) -> Dict[str, Any]:
+        ...

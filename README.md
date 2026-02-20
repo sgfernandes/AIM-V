@@ -1,32 +1,58 @@
-# AIM-V (Industrial Technology Validation Automation)
+# AIM-V — Automation for Industrial M&V
 
-AIM-V (Automation for Industrial M&V) is the full project scaffold for automating the DOE ITV program workflows: technology screening, automated M&V plan generation, RAG-grounded LLM agents, and RLHF-based improvement.
+Multi-agent platform for automating DOE ITV M&V workflows: strategy planning, baseline analytics, and documentation generation.
 
-Contents
-- `backend/` — FastAPI microservices
-- `llm_agents/` — agents for screening, M&V planning, analysis, and report writing
-- `data/` — storage for ingested reports and training data
-- `docs/` — architecture, M&V summary and training notes
-- `training/` — SFT + RLHF scaffolds and evaluation harness
-- `docs/itv_mv_system_architecture.md` — ITV M&V multi-agent system architecture diagram
+## Architecture
 
-Quick start
+See [`docs/itv_mv_system_architecture.md`](docs/itv_mv_system_architecture.md) for the full system diagram.
+
+| Component | Path | Purpose |
+|-----------|------|---------|
+| FastAPI backend | `backend/` | `/health` and `/chat` API endpoints |
+| Strategy Engine | `llm_agents/strategy_agent.py` | IPMVP option recommendation + boundary guidance |
+| Analytics Engine | `llm_agents/analytics_agent.py` | OLS regression, R², CV(RMSE), QA/QC, savings |
+| Documentation Engine | `llm_agents/documentation_agent.py` | M&V plan and report markdown generation |
+| Orchestrator | `llm_agents/orchestrator.py` | Intent routing across engines |
+| Tests | `tests/` | Unit + API integration tests |
+| Sample payloads | `docs/sample_chat_payloads.json` | Ready-to-use `/chat` request examples |
+| ITV reports | `data/raw/itv_reports/` | Source validation reports |
+
+## Quick start
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
+python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-# Run backend API
 uvicorn backend.app.main:app --reload
 ```
 
-API endpoints
-- `GET /health` — service health check
-- `POST /chat` — orchestrates user prompts to Strategy, Analytics, or Documentation agent
+Open http://127.0.0.1:8000/docs for Swagger UI.
 
-Contributing
-- Open issues and PRs on GitHub. Create topic branches and include tests where appropriate.
+## Run tests
 
-License
-- Add a license if you want to make this project public. For now this repo is private.
+```bash
+pytest -q
+```
+
+## API
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/health` | Service health check |
+| `POST` | `/chat` | Route prompt to Strategy, Analytics, or Documentation engine |
+
+### POST /chat example
+
+```json
+{
+  "message": "Run baseline regression and QA/QC",
+  "context": {
+    "dependent_var": "energy",
+    "predictors": ["temperature", "hours"],
+    "baseline_data": [
+      {"temperature": 21, "hours": 8, "energy": 166},
+      {"temperature": 22, "hours": 9, "energy": 171}
+    ]
+  }
+}
+```
 

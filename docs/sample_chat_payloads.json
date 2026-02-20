@@ -1,0 +1,70 @@
+{
+  "strategy_example": {
+    "message": "Help me plan M&V for a whole-facility retrofit",
+    "context": {
+      "whole_facility": true,
+      "simulation_required": false,
+      "measurement_boundary": "main utility meter"
+    }
+  },
+  "analytics_example": {
+    "message": "Run baseline regression and QA/QC",
+    "context": {
+      "intent": "analytics",
+      "dependent_var": "energy",
+      "predictors": ["temperature", "hours"],
+      "baseline_data": [
+        { "temperature": 21, "hours": 8, "energy": 166 },
+        { "temperature": 22, "hours": 9, "energy": 171 },
+        { "temperature": 23, "hours": 10, "energy": 176 },
+        { "temperature": 24, "hours": 11, "energy": 181 },
+        { "temperature": 25, "hours": 12, "energy": 186 },
+        { "temperature": 26, "hours": 8, "energy": 176 },
+        { "temperature": 27, "hours": 9, "energy": 181 },
+        { "temperature": 28, "hours": 10, "energy": 186 },
+        { "temperature": 29, "hours": 11, "energy": 191 },
+        { "temperature": 30, "hours": 12, "energy": 196 }
+      ]
+    }
+  },
+  "analytics_with_savings_example": {
+    "message": "Calculate post-implementation savings",
+    "context": {
+      "intent": "analytics",
+      "dependent_var": "energy",
+      "predictors": ["temperature", "hours"],
+      "baseline_data": [
+        { "temperature": 21, "hours": 8, "energy": 166 },
+        { "temperature": 22, "hours": 9, "energy": 171 },
+        { "temperature": 23, "hours": 10, "energy": 176 },
+        { "temperature": 24, "hours": 11, "energy": 181 },
+        { "temperature": 25, "hours": 12, "energy": 186 }
+      ],
+      "post_data": [
+        { "temperature": 21, "hours": 8, "energy": 158 },
+        { "temperature": 22, "hours": 9, "energy": 163 },
+        { "temperature": 23, "hours": 10, "energy": 168 },
+        { "temperature": 24, "hours": 11, "energy": 173 },
+        { "temperature": 25, "hours": 12, "energy": 178 }
+      ]
+    }
+  },
+  "documentation_example": {
+    "message": "Generate final documentation",
+    "context": {
+      "intent": "documentation",
+      "project_name": "Chiller Upgrade 2026",
+      "facility": "HQ Campus",
+      "strategy_output": {
+        "recommended_option": "IPMVP Option C",
+        "measurement_boundary": "main utility meter",
+        "independent_variables": ["outdoor_temperature", "operating_hours"]
+      },
+      "analytics_output": {
+        "r2": 0.92,
+        "cvrmse_percent": 11.5,
+        "qa_qc": { "pass": true }
+      }
+    }
+  }
+}

@@ -1,5 +1,6 @@
+from typing import Any, Dict
+
 from llm_agents.analytics_agent import AnalyticsAgent
-from llm_agents.base import AgentResult
 from llm_agents.documentation_agent import DocumentationAgent
 from llm_agents.strategy_agent import StrategyAgent
 
@@ -10,52 +11,50 @@ class Orchestrator:
         self.analytics = AnalyticsAgent()
         self.documentation = DocumentationAgent()
 
-    def route(self, message: str) -> AgentResult:
-        text = message.lower()
+    def _route(self, message: str, context: Dict[str, Any]) -> str:
+        forced = str(context.get("intent", "")).lower().strip()
+        if forced in {"strategy", "analytics", "documentation"}:
+            return forced
 
-        if self._is_strategy_request(text):
-            return self.strategy.handle(message)
-        if self._is_analytics_request(text):
-            return self.analytics.handle(message)
-        if self._is_documentation_request(text):
-            return self.documentation.handle(message)
-        return self.strategy.handle(message)
+        m = message.lower()
+        if any(
+            k in m
+            for k in [
+                "regression",
+                "r2",
+                "cvrmse",
+                "baseline",
+                "savings",
+                "qa",
+                "qaqc",
+                "analytics",
+            ]
+        ):
+            return "analytics"
+        if any(
+            k in m
+            for k in [
+                "report",
+                "document",
+                "template",
+                "write plan",
+                "documentation",
+            ]
+        ):
+            return "documentation"
+        return "strategy"
 
-    @staticmethod
-    def _is_strategy_request(text: str) -> bool:
-        keywords = [
-            "strategy",
-            "planning",
-            "m&v option",
-            "boundary",
-            "independent variable",
-            "measurement boundary",
-            "facility type",
-        ]
-        return any(keyword in text for keyword in keywords)
+    def run(self, message: str, context: Dict[str, Any]) -> Dict[str, Any]:
+        intent = self._route(message, context)
 
-    @staticmethod
-    def _is_analytics_request(text: str) -> bool:
-        keywords = [
-            "baseline",
-            "regression",
-            "r2",
-            "cv(rmse)",
-            "qaqc",
-            "qa/qc",
-            "post-implementation",
-            "savings calculation",
-        ]
-        return any(keyword in text for keyword in keywords)
+        if intent == "strategy":
+            result = self.strategy.run(message, context)
+            return {"agent": "strategy", "intent": intent, "result": result}
 
-    @staticmethod
-    def _is_documentation_request(text: str) -> bool:
-        keywords = [
-            "report",
-            "documentation",
-            "template",
-            "risk matrix",
-            "responsibility",
-            "write-up",
-        ]
+        if intent == "analytics":
+            result = self.analytics.run(message, context)
+            return {"agent": "analytics", "intent": intent, "result": result}
+
+        result = self.documentation.run(message, context)
+        return {"agent": "documentation", "intent": intent, "result": result}
         return any(keyword in text for keyword in keywords)
