@@ -1,0 +1,3 @@
+[submodule "analytics-agent"]
+	path = analytics-agent
+	url = https://github.com/sgfernandes/analytics-agent.git
