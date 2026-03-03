@@ -24,7 +24,7 @@ def test_ols_returns_metrics():
     assert out["model_type"] == "OLS"
     assert out["r2"] > 0.99
     assert out["cvrmse_percent"] < 1.0
-    assert out["qa_qc"]["pass"] is True
+    assert out["qa_qc"]["model_pass"] is True
 
 
 def test_ols_error_on_empty_data():
