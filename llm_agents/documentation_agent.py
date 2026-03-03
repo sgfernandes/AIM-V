@@ -17,7 +17,7 @@ class DocumentationAgent(BaseAgent):
         indep_vars = strategy.get("independent_variables", [])
         r2 = analytics.get("r2", "TBD")
         cvrmse = analytics.get("cvrmse_percent", "TBD")
-        qa = analytics.get("qa_qc", {}).get("pass", "TBD")
+        qa = analytics.get("qa_qc", {}).get("model_pass", analytics.get("qa_qc", {}).get("pass", "TBD"))
 
         doc_md = (
             f"# M&V Plan Summary\n\n"
