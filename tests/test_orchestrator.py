@@ -33,3 +33,11 @@ def test_forced_intent_overrides():
     out = orch.run("anything", {"intent": "documentation"})
     assert out["agent"] == "documentation"
     assert "trace_id" in out
+
+
+def test_guided_mode_routes_to_guide():
+    orch = _make_orch()
+    out = orch.run("Help me get started", {"guided_mode": True})
+    assert out["agent"] == "guide"
+    assert out["result"]["current_stage"] == "strategy"
+    assert "trace_id" in out

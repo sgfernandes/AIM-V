@@ -8,3 +8,5 @@ scipy
 streamlit
 pytest
 httpx
+openai
+python-dotenv

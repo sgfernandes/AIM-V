@@ -1,6 +1,6 @@
 # AIM-V — Automation for Industrial M&V
 
-Multi-agent platform for automating DOE ITV M&V workflows: strategy planning, baseline analytics, and documentation generation.
+Guided multi-agent workflow for industrial Measurement and Verification: strategy planning, baseline analytics, and documentation generation.
 
 ## Architecture
 
@@ -17,15 +17,68 @@ See [`docs/itv_mv_system_architecture.md`](docs/itv_mv_system_architecture.md) f
 | Sample payloads | `docs/sample_chat_payloads.json` | Ready-to-use `/chat` request examples |
 | ITV reports | `data/raw/itv_reports/` | Source validation reports |
 
-## Quick start
+## Quick Start
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
+streamlit run streamlit_app.py
+```
+
+Open `http://127.0.0.1:8501` for the guided UI.
+
+To run the FastAPI backend instead:
+
+```bash
 uvicorn backend.app.main:app --reload
 ```
 
-Open http://127.0.0.1:8000/docs for Swagger UI.
+Open `http://127.0.0.1:8000/docs` for Swagger UI.
+
+## Guided AI Mode
+
+The Streamlit UI now supports a guided workflow assistant that can run in two modes:
+
+- Deterministic fallback: works without external API access and guides users through strategy, analytics, and documentation with built-in rules.
+- OpenAI-backed guidance: if `OPENAI_API_KEY` is set, the guide uses an OpenAI model to interpret freeform user replies and draft more natural stage-by-stage coaching while the domain logic still runs through the specialist agents.
+
+Optional environment variables:
+
+```bash
+export OPENAI_API_KEY=your_key_here
+export OPENAI_MODEL=gpt-5.4
+```
+
+Then launch the UI:
+
+```bash
+streamlit run streamlit_app.py
+```
+
+If no OpenAI key is set, the app still works in deterministic mode.
+
+## Deployment
+
+The easiest hosted option is Streamlit Community Cloud.
+
+1. Push this repo to GitHub.
+2. In Streamlit Community Cloud, create a new app from the repo.
+3. Set the entrypoint to `streamlit_app.py`.
+4. Add secrets in the app settings:
+
+```toml
+OPENAI_API_KEY = "your_key_here"
+OPENAI_MODEL = "gpt-5.4"
+```
+
+You can also use `.streamlit/secrets.toml.example` as a template for local development, but never commit a real `.streamlit/secrets.toml`.
+
+## Public Repo Checklist
+
+- Rotate any key that has ever been pasted into chat or a terminal screenshot.
+- Keep `.env` and `.streamlit/secrets.toml` local only.
+- Review source PDFs and documents before publishing if they contain restricted project material.
+- Run tests before pushing public changes.
 
 ## Run tests
 
@@ -55,4 +108,3 @@ pytest -q
   }
 }
 ```
-

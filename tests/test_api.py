@@ -62,3 +62,17 @@ def test_chat_documentation():
     body = resp.json()
     assert body["agent"] == "documentation"
     assert "document_markdown" in body["result"]
+
+
+def test_chat_guided_mode():
+    resp = client.post(
+        "/chat",
+        json={
+            "message": "Help me through the workflow",
+            "context": {"guided_mode": True},
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["agent"] == "guide"
+    assert body["result"]["current_stage"] == "strategy"

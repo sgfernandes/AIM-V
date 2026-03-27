@@ -3,6 +3,7 @@ from typing import Any, Dict
 from llm_agents.analytics_agent import AnalyticsAgent
 from llm_agents.constraints import validate_output
 from llm_agents.documentation_agent import DocumentationAgent
+from llm_agents.guidance_agent import GuidanceAgent
 from llm_agents.strategy_agent import StrategyAgent
 from llm_agents.trace_logger import TraceLogger
 
@@ -12,13 +13,21 @@ class Orchestrator:
         self.strategy = StrategyAgent()
         self.analytics = AnalyticsAgent()
         self.documentation = DocumentationAgent()
+        self.guidance = GuidanceAgent(
+            strategy=self.strategy,
+            analytics=self.analytics,
+            documentation=self.documentation,
+        )
         self.tracer = TraceLogger(log_dir=trace_dir)
 
     def _route(self, message: str, context: Dict[str, Any]) -> str:
         """Routes the user's message to the appropriate agent based on intent."""
+        if context.get("guided_mode"):
+            return "guide"
+
         # Allow forcing an intent for testing or explicit control
         forced_intent = str(context.get("intent", "")).lower().strip()
-        if forced_intent in {"strategy", "analytics", "documentation"}:
+        if forced_intent in {"strategy", "analytics", "documentation", "guide"}:
             return forced_intent
 
         # LLM-based intent classification
@@ -82,12 +91,16 @@ class Orchestrator:
         elif intent == "analytics":
             result = self.analytics.run(message, context)
             trace.agent_name = "analytics"
+        elif intent == "guide":
+            result = self.guidance.run(message, context)
+            trace.agent_name = "guide"
         else:
             result = self.documentation.run(message, context)
             trace.agent_name = "documentation"
 
         # --- constraint check ---
-        verdict = validate_output(result, context)
+        constraint_target = result.get("stage_result", result)
+        verdict = validate_output(constraint_target, context)
         if not verdict.passed:
             result["_constraint_blocked"] = True
             result["_constraint_violations"] = verdict.to_dict()["violations"]

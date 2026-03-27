@@ -2,12 +2,15 @@ __pycache__/
 *.py[cod]
 *.pyo
 .venv/
+.env
+.env.local
 .pytest_cache/
 .mypy_cache/
 *.egg-info/
 dist/
 build/
 .DS_Store
+.streamlit/secrets.toml
 data/traces/
 ITVPlatformEngines-*.json
 itv-mv_agentic_framework_chat_*.json

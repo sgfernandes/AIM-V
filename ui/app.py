@@ -46,10 +46,16 @@ if "orchestrator" not in st.session_state:
 
 for key in [
     "strategy_result", "analytics_result", "documentation_result",
-    "baseline_df", "post_df",
+    "baseline_df", "post_df", "last_response", "chat_history",
+    "workflow_context",
 ]:
     if key not in st.session_state:
-        st.session_state[key] = None
+        if key == "chat_history":
+            st.session_state[key] = []
+        elif key == "workflow_context":
+            st.session_state[key] = {}
+        else:
+            st.session_state[key] = None
 
 
 # ===================================================================
@@ -59,6 +65,186 @@ def render_json(data: Any, label: str = "Result JSON") -> None:
     """Pretty-print a dict as expandable JSON."""
     with st.expander(label, expanded=False):
         st.json(data)
+
+
+def load_sample_data() -> None:
+    """Populate session state with sample baseline and post-period data."""
+    st.session_state.baseline_df = pd.DataFrame([
+        {"temperature": 21, "hours": 8, "energy": 166},
+        {"temperature": 22, "hours": 9, "energy": 171},
+        {"temperature": 23, "hours": 10, "energy": 176},
+        {"temperature": 24, "hours": 11, "energy": 181},
+        {"temperature": 25, "hours": 12, "energy": 186},
+        {"temperature": 26, "hours": 8, "energy": 176},
+        {"temperature": 27, "hours": 9, "energy": 181},
+        {"temperature": 28, "hours": 10, "energy": 186},
+        {"temperature": 29, "hours": 11, "energy": 191},
+        {"temperature": 30, "hours": 12, "energy": 196},
+    ])
+    st.session_state.post_df = pd.DataFrame([
+        {"temperature": 21, "hours": 8, "energy": 158},
+        {"temperature": 22, "hours": 9, "energy": 163},
+        {"temperature": 23, "hours": 10, "energy": 168},
+        {"temperature": 24, "hours": 11, "energy": 173},
+        {"temperature": 25, "hours": 12, "energy": 178},
+    ])
+
+
+def reset_guided_workflow() -> None:
+    """Clear the guided workflow conversation and derived outputs."""
+    st.session_state.last_response = None
+    st.session_state.chat_history = []
+    st.session_state.workflow_context = {}
+    st.session_state.strategy_result = None
+    st.session_state.analytics_result = None
+    st.session_state.documentation_result = None
+
+
+def build_chat_context() -> Dict[str, Any]:
+    """Build orchestrator context from currently loaded workflow state."""
+    context: Dict[str, Any] = dict(st.session_state.workflow_context)
+    baseline_df = st.session_state.baseline_df
+    post_df = st.session_state.post_df
+
+    if baseline_df is not None and not baseline_df.empty:
+        context["baseline_data"] = baseline_df.to_dict("records")
+        numeric_cols = [
+            column
+            for column in baseline_df.columns
+            if pd.api.types.is_numeric_dtype(baseline_df[column])
+        ]
+        if numeric_cols:
+            dependent_var = "energy" if "energy" in numeric_cols else numeric_cols[-1]
+            predictors = [column for column in numeric_cols if column != dependent_var]
+            context["dependent_var"] = dependent_var
+            if predictors:
+                context["predictors"] = predictors
+
+    if post_df is not None and not post_df.empty:
+        context["post_data"] = post_df.to_dict("records")
+
+    if st.session_state.strategy_result:
+        context["strategy_output"] = st.session_state.strategy_result
+    if st.session_state.analytics_result:
+        context["analytics_output"] = st.session_state.analytics_result
+    if st.session_state.documentation_result:
+        context["documentation_output"] = st.session_state.documentation_result
+
+    context["guided_mode"] = True
+
+    return context
+
+
+def render_chat_response(response: Dict[str, Any], compact: bool = False) -> None:
+    """Render a chat response using the actual agent output schema."""
+    agent = response.get("agent", "unknown")
+    result = response.get("result", {})
+
+    if "error" in result:
+        st.error(result["error"])
+        render_json(response, "Debug Response")
+        return
+
+    if agent == "guide":
+        st.markdown(result.get("assistant_message", "No guidance available."))
+        stage_line = (
+            f"Stage: `{result.get('current_stage', 'unknown').title()}`  |  "
+            f"Next: `{result.get('next_stage', 'unknown').title()}`  |  "
+            f"Status: `{result.get('stage_status', 'unknown').replace('_', ' ').title()}`"
+        )
+        st.caption(stage_line)
+        llm_guidance = result.get("llm_guidance", {})
+        if llm_guidance:
+            mode = "OpenAI" if llm_guidance.get("enabled") else "Deterministic"
+            model = llm_guidance.get("model", "n/a")
+            st.caption(f"Guidance mode: {mode} · model: `{model}`")
+        for action in result.get("action_items", []):
+            st.markdown(f"- {action}")
+
+        if result.get("strategy_output"):
+            with st.expander("Strategy Recommendation", expanded=not compact):
+                render_chat_response(
+                    {
+                        "agent": "strategy",
+                        "result": result["strategy_output"],
+                    },
+                    compact=True,
+                )
+        if result.get("analytics_output"):
+            with st.expander("Analytics Summary", expanded=False):
+                render_chat_response(
+                    {
+                        "agent": "analytics",
+                        "result": result["analytics_output"],
+                    },
+                    compact=True,
+                )
+        if result.get("documentation_output"):
+            with st.expander("Documentation Draft", expanded=False):
+                render_chat_response(
+                    {
+                        "agent": "documentation",
+                        "result": result["documentation_output"],
+                    },
+                    compact=True,
+                )
+    elif agent == "strategy":
+        st.markdown(
+            f"Recommended option: `{result.get('recommended_option', 'TBD')}`"
+        )
+        st.markdown(
+            f"Boundary: `{result.get('measurement_boundary', 'TBD')}`"
+        )
+        variables = result.get("independent_variables", [])
+        st.markdown(
+            "Independent variables: "
+            + (", ".join(variables) if variables else "None identified yet.")
+        )
+        if not compact:
+            for assumption in result.get("assumptions", []):
+                st.markdown(f"- {assumption}")
+    elif agent == "analytics":
+        cols = st.columns(3)
+        cols[0].metric("R²", f"{result.get('r2', 0):.4f}")
+        cols[1].metric("CV(RMSE) %", f"{result.get('cvrmse_percent', 0):.2f}")
+        qa_qc = result.get("qa_qc", {})
+        cols[2].metric("QA/QC Pass", "Yes" if qa_qc.get("model_pass") else "No")
+        if not compact:
+            render_qa_qc(result)
+    elif agent == "documentation":
+        st.markdown(
+            result.get(
+                "document_markdown",
+                result.get("document", "No document generated."),
+            )
+        )
+    else:
+        st.warning("Unknown agent response.")
+
+    if not compact:
+        render_json(response, "Debug Response")
+
+
+def run_guided_chat_turn(user_input: str) -> None:
+    """Run one guided chat turn and update session state."""
+    with st.spinner("Thinking..."):
+        context = build_chat_context()
+        response = st.session_state.orchestrator.run(user_input, context)
+    st.session_state.last_response = response
+    if response.get("agent") == "guide":
+        guide_result = response.get("result", {})
+        st.session_state.workflow_context.update(
+            guide_result.get("context_updates", {})
+        )
+        if guide_result.get("strategy_output"):
+            st.session_state.strategy_result = guide_result["strategy_output"]
+        if guide_result.get("analytics_output"):
+            st.session_state.analytics_result = guide_result["analytics_output"]
+        if guide_result.get("documentation_output"):
+            st.session_state.documentation_result = guide_result["documentation_output"]
+    st.session_state.chat_history.append(
+        {"user": user_input, "response": response}
+    )
 
 
 def render_qa_qc(result: Dict[str, Any]) -> None:
@@ -136,81 +322,84 @@ def render_qa_qc(result: Dict[str, Any]) -> None:
 # ===================================================================
 #  Agentic Chat Interface
 # ===================================================================
-st.sidebar.title("💬 Agentic Interface")
+st.sidebar.title("AIM-V")
 page = st.sidebar.radio(
-    "Navigate",
+    "Workspace",
     [
+        "Chat",
         "1 — Strategy",
         "2 — Analytics",
         "3 — Documentation",
         "4 — Full Pipeline",
     ],
 )
-user_input = st.sidebar.text_input("Ask the M&V assistant:")
+st.sidebar.caption("Chat-first guided workflow for strategy, analytics, and documentation.")
 
-if st.sidebar.button("Send"):
-    if user_input:
-        with st.spinner("Agent is thinking..."):
-            # Use a basic context for now, can be expanded
-            context = {
-                "baseline_df": st.session_state.baseline_df,
-                "post_df": st.session_state.post_df,
-            }
-            response = st.session_state.orchestrator.run(user_input, context)
-            st.session_state.last_response = response
+last_result = st.session_state.last_response.get("result", {}) if st.session_state.last_response else {}
+llm_guidance = last_result.get("llm_guidance", {})
+mode = "OpenAI" if llm_guidance.get("enabled") else "Deterministic"
+current_stage = last_result.get("current_stage", "strategy").replace("_", " ").title()
+st.sidebar.markdown(f"**Mode:** `{mode}`")
+st.sidebar.markdown(f"**Stage:** `{current_stage}`")
+st.sidebar.markdown(
+    f"**Data:** `{'Ready' if st.session_state.baseline_df is not None else 'Missing'}`"
+)
 
-if "last_response" in st.session_state and st.session_state.last_response:
-    response = st.session_state.last_response
-    st.sidebar.markdown("---")
-    st.sidebar.markdown(f"**Agent:** `{response['agent']}`")
-    st.sidebar.markdown(f"**Intent:** `{response['intent']}`")
-    with st.sidebar.expander("View Full Response", expanded=False):
-        st.json(response)
+if st.sidebar.button("Load Sample Data", use_container_width=True):
+    load_sample_data()
+    st.sidebar.success("Sample baseline and post-period data loaded.")
+
+if st.sidebar.button("Reset Workflow", use_container_width=True):
+    reset_guided_workflow()
+    st.rerun()
 
 st.sidebar.markdown("---")
-st.sidebar.markdown(
-    "**Agents:**  Strategy · Analytics · Documentation\n\n"
-    "Built on [IPMVP](https://evo-world.org/en/) · "
-    "[ASHRAE Guideline 14](https://www.ashrae.org/)"
-)
+st.sidebar.markdown("Need help?")
+st.sidebar.markdown("- Use `Chat` for the normal guided experience.")
+st.sidebar.markdown("- Use `Analytics` to upload baseline CSV data.")
+st.sidebar.markdown("- Use `Documentation` to export the final summary.")
 
 # ===================================================================
 #  Main content area
 # ===================================================================
-st.title("Agentic M&V Assistant")
-st.caption("A conversational interface for industrial Measurement & Verification workflows.")
+def page_chat() -> None:
+    st.title("AIM-V Assistant")
+    st.caption("Chat with the workflow guide and let it move you through strategy, analytics, and documentation.")
 
-if "last_response" in st.session_state and st.session_state.last_response:
-    response = st.session_state.last_response
-    result = response.get("result", {})
+    last_result = st.session_state.last_response.get("result", {}) if st.session_state.last_response else {}
+    top_cols = st.columns(3)
+    top_cols[0].metric(
+        "Current Stage",
+        last_result.get("current_stage", "strategy").replace("_", " ").title(),
+    )
+    top_cols[1].metric(
+        "Guidance Mode",
+        "OpenAI" if last_result.get("llm_guidance", {}).get("enabled") else "Deterministic",
+    )
+    top_cols[2].metric(
+        "Baseline Data",
+        "Loaded" if st.session_state.baseline_df is not None else "Not loaded",
+    )
 
-    if response["agent"] == "strategy":
-        st.header("M&V Strategy Recommendation")
-        st.markdown(f"**Recommended IPMVP Option:** `{result.get('recommended_option')}`")
-        st.markdown("**Rationale:**")
-        st.info(result.get('rationale', 'Not provided.'))
-        st.markdown("**Recommended Predictors:**")
-        st.code(", ".join(result.get('recommended_predictors', [])))
-        render_json(result)
+    with st.container(border=True):
+        if not st.session_state.chat_history:
+            with st.chat_message("assistant"):
+                st.markdown(
+                    "Describe your retrofit project in plain language and I’ll guide you to the next step."
+                )
+                st.markdown("- Example: `We’re planning M&V for a whole-facility chiller upgrade at the HQ campus.`")
+                st.markdown("- If I ask for data, switch to the `Analytics` page or use `Load Sample Data` in the sidebar.")
 
-    elif response["agent"] == "analytics":
-        st.header("Baseline Analytics Results")
-        render_qa_qc(result)
-        if "model_equation" in result:
-            st.latex(result["model_equation"])
-        render_json(result)
+        for turn in st.session_state.chat_history:
+            with st.chat_message("user"):
+                st.markdown(turn["user"])
+            with st.chat_message("assistant"):
+                render_chat_response(turn["response"], compact=False)
 
-    elif response["agent"] == "documentation":
-        st.header("Generated Documentation")
-        st.markdown(
-            result.get("document_markdown", result.get("document", "No document generated."))
-        )
-        render_json(result)
-    else:
-        st.warning("Unknown agent response.")
-        render_json(response)
-else:
-    st.info("Ask a question in the sidebar to begin the M&V workflow.")
+    prompt = st.chat_input("Describe the project or answer the assistant's question")
+    if prompt:
+        run_guided_chat_turn(prompt)
+        st.rerun()
 
 
 # ===================================================================
@@ -296,25 +485,7 @@ def page_analytics() -> None:
     with tab_manual:
         st.markdown("Use sample data to try the agent quickly.")
         if st.button("Load Sample Data"):
-            st.session_state.baseline_df = pd.DataFrame([
-                {"temperature": 21, "hours": 8, "energy": 166},
-                {"temperature": 22, "hours": 9, "energy": 171},
-                {"temperature": 23, "hours": 10, "energy": 176},
-                {"temperature": 24, "hours": 11, "energy": 181},
-                {"temperature": 25, "hours": 12, "energy": 186},
-                {"temperature": 26, "hours": 8, "energy": 176},
-                {"temperature": 27, "hours": 9, "energy": 181},
-                {"temperature": 28, "hours": 10, "energy": 186},
-                {"temperature": 29, "hours": 11, "energy": 191},
-                {"temperature": 30, "hours": 12, "energy": 196},
-            ])
-            st.session_state.post_df = pd.DataFrame([
-                {"temperature": 21, "hours": 8, "energy": 158},
-                {"temperature": 22, "hours": 9, "energy": 163},
-                {"temperature": 23, "hours": 10, "energy": 168},
-                {"temperature": 24, "hours": 11, "energy": 173},
-                {"temperature": 25, "hours": 12, "energy": 178},
-            ])
+            load_sample_data()
             st.rerun()
 
         if st.session_state.baseline_df is not None:
@@ -533,6 +704,8 @@ def page_pipeline() -> None:
 # ===================================================================
 if page == "1 — Strategy":
     page_strategy()
+elif page == "Chat":
+    page_chat()
 elif page == "2 — Analytics":
     page_analytics()
 elif page == "3 — Documentation":
