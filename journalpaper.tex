@@ -1,0 +1,752 @@
+%--------------------
+% Packages
+% -------------------
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+%\usepackage{gentium}
+%\usepackage{mathptmx} % Use Times Font
+
+
+\usepackage[pdftex]{graphicx} % Required for including pictures
+\usepackage[swedish]{babel} % Swedish translations
+\usepackage[pdftex,linkcolor=black,pdfborder={0 0 0}]{hyperref} % Format links for pdf
+\usepackage{calc} % To reset the counter in the document after title page
+\usepackage{enumitem} % Includes lists
+
+\frenchspacing % No double spacing between sentences
+\linespread{1.2} % Set linespace
+\usepackage[a4paper, lmargin=0.1666\paperwidth, rmargin=0.1666\paperwidth, tmargin=0.1111\paperheight, bmargin=0.1111\paperheight]{geometry} %margins
+%\usepackage{parskip}
+
+\usepackage[all]{nowidow} % Tries to remove widows
+\usepackage[protrusion=true,expansion=true]{microtype} % Improves typography, load after fontpackage is selected
+
+\usepackage{lipsum} % Used for inserting dummy 'Lorem ipsum' text into the template
+
+
+%-----------------------
+% Set pdf information and add title, fill in the fields
+%-----------------------
+\hypersetup{ 	
+pdfsubject = {},
+pdftitle = {},
+pdfauthor = {}
+}
+
+%-----------------------
+% Begin document
+%-----------------------
+\begin{document} %All text i dokumentet hamnar mellan dessa taggar, allt ovanför är formatering av dokumentet
+
+\title{A Constrained, Expert-Aligned Multi-Agent Assistant for Industrial M\&V Combining Deterministic Analytics with Preference-Optimized Language Policies}
+\author{ITV Platform Engineering}
+\date{\today}
+\maketitle
+
+\begin{abstract}
+The increasing complexity of industrial energy systems and the massive resource demands of artificial intelligence (AI) have created a critical bottleneck for sustainable growth. Traditional Measurement and Verification (M\&V) methods are inadequate for the real-time, granular monitoring required to manage this dynamic. Agentic AI, where autonomous agents orchestrate complex workflows, offers a promising solution, yet raises concerns about reliability, trustworthiness, and the preservation of statistical rigor. This paper introduces a novel hybrid architecture for an agentic M\&V assistant that addresses these challenges. We combine a deterministic, statistically robust analytics engine, grounded in established protocols like IPMVP and ASHRAE Guideline 14, with preference-optimized language policies trained via expert-aligned Reinforcement Learning from Human Feedback (RLHF). The system is governed by a hard safety and audit layer that enforces non-negotiable domain constraints, ensuring mathematical defensibility while improving the judgment- and language-heavy tasks of M\&V, such as strategy recommendation, risk interpretation, and documentation. We present the system's design, a detailed experimental protocol for its validation, and a task taxonomy that explicitly separates deterministic components from those targeted by RLHF. Our central contribution is a methodology for building trustworthy agentic assistants for high-stakes industrial domains, demonstrating how to enhance system usefulness and intelligence without sacrificing core analytical integrity.
+\end{abstract}
+
+\section{Introduction}
+
+The "Twin Transition"—the simultaneous global push towards digitalization and sustainability—is fundamentally constrained by an emerging AI-energy bottleneck \cite{iea2024electricity}. As AI systems become more powerful, their computational and energy demands grow exponentially, with global data center electricity consumption projected to exceed 1,000 TWh by 2026 \cite{iea2024electricity}. This voracious appetite for power creates a dual challenge: it strains energy grids and threatens to make AI development environmentally and economically unsustainable \cite{strubell2019energy, schwartz2019green}. For industrial sectors, which are simultaneously adopting AI for optimization while pursuing decarbonization, this bottleneck is particularly acute.
+
+Effective Measurement and Verification (M\&V) of energy efficiency measures is critical to managing this challenge, yet traditional M\&V practices are manual, periodic, and reactive. They lack the speed and granularity to optimize resource flows in real-time, a capability essential for integrating variable renewable energy sources and managing the dynamic loads of AI data centers \cite{aceee2024}.
+
+Agentic AI—where autonomous software agents perceive, reason, and act to achieve complex goals—presents a transformative solution \cite{wang2023agents, xi2023agents}. An agentic M\&V framework, capable of continuously monitoring equipment, invoking analytical tools, and generating audit-ready documentation, could turn energy from a fixed constraint into a programmable, optimizable resource. However, deploying autonomous agents in high-stakes industrial settings introduces significant risks, including flawed decision-making, opaque reasoning, and the potential to violate established engineering and safety protocols \cite{vu2025abpm}. The core challenge is to harness the power of Large Language Models (LLMs) to automate complex judgment and communication tasks without compromising the mathematical rigor and trustworthiness required for industrial M\&V.
+
+To address this, we propose a novel hybrid architecture that combines the strengths of deterministic analytics and preference-optimized AI. This paper details the design and experimental validation plan for a \textbf{constrained, expert-aligned multi-agent assistant for industrial M\&V}. Our system is built on a foundational layer of deterministic statistical engines that perform regression analysis and savings calculations according to established protocols (e.g., IPMVP, ASHRAE Guideline 14). Layered on top, we use Reinforcement Learning from Human Feedback (RLHF), specifically Direct Preference Optimization (DPO), to train LLM-based policies for judgment-heavy tasks like M\&V strategy selection, risk interpretation, and report generation.
+
+Crucially, the entire system operates under a non-negotiable safety and audit layer that enforces hard domain constraints, such as role boundaries and data quality checks. This ensures that while the agent's communicative and reasoning abilities are enhanced through machine learning, its outputs remain tethered to verifiable ground truths and adhere to strict governance rules.
+
+The central contribution of this work is a concrete, reproducible methodology for building trustworthy agentic systems for regulated industrial domains. We hypothesize that this hybrid approach can significantly improve the quality and usefulness of an M\&V assistant over a purely deterministic or a fully unconstrained LLM-based system. We detail the architecture, a task taxonomy that delineates learnable from deterministic components, and a comprehensive experimental design to test our hypotheses.
+\end{intro}
+
+\section{Outline}
+
+%\lipsum[1-3]
+
+\textbf{MV and how it has been done over the years}
+\begin{itemize}
+    \item Framing of MV and AI in the age of AI
+    industrial flourishing in the age of AI, we have to look at the "energy bottleneck." AI isn't just a software revolution; it is a massive physical infrastructure project that demands unprecedented amounts of electricity and cooling resources.
+    An agentic framework for Measurement and Verification (M&V)—where autonomous AI agents monitor, report, and optimize resource flows in real-time—is the "missing link" that prevents resource scarcity from strangling industrial growth.
+    \item MV 2.0
+    \item Models used in MV
+    \item Tools used to guide users towards MV
+    \item Barriers to MV in the industry
+    \item Impact Assessment in general
+    \item New Technologies and Impact
+    \item AI, Energy Bottleneck: Agents as the Critical Solution
+    
+    \textbf{The AI-Energy Bottleneck Crisis}
+    
+    As we advance into the age of AI, the intersection of artificial intelligence and energy systems reveals a critical bottleneck: the complexity of the modern energy grid and the resource demands of AI itself are becoming unmanageable without sophisticated real-time monitoring and optimization. AI is not merely a software revolution—it represents a massive physical infrastructure challenge demanding unprecedented amounts of electricity, cooling resources, and computational capacity \cite{energies2024, ieee2025}.
+    
+    Recent research has quantified the alarming scale of this challenge. Training a single large neural network model can consume as much energy as five cars over their entire lifetimes, with substantial environmental impacts that rival transcontinental flights \cite{strubell2019energy}. The computational requirements for deep learning have been doubling every few months, resulting in an estimated 300,000-fold increase from 2012 to 2018 \cite{schwartz2019green}. This exponential growth in computational demand translates directly into energy consumption and environmental impact, creating both financial and ecological barriers to AI research and deployment.
+    
+    The modern energy grid faces unprecedented complexity with distributed renewable energy sources, variable loads, and increasing electrification across sectors. Simultaneously, AI systems require exponentially growing computational resources, with data centers consuming significant portions of regional power grids. Global data center electricity consumption is projected to more than double from 460 TWh in 2022 to over 1,000 TWh by 2026—equivalent to Japan's entire electricity consumption \cite{iea2024electricity}. This dual challenge creates a ``bottleneck'' where traditional measurement and verification approaches fail to provide the real-time granularity and responsiveness needed \cite{aceee2024, nature2025ai}.
+
+    \textbf{The Agentic AI Paradigm}
+
+    The emergence of large language models (LLMs) has catalyzed a fundamental paradigm shift in artificial intelligence: the transition from passive, prompt-response systems to \textit{agentic} architectures—autonomous software entities capable of perceiving their environment, reasoning about complex goals, planning multi-step actions, and executing them with minimal human supervision \cite{wang2023agents, xi2023agents}. Unlike conventional AI systems that produce a single output per query, agentic AI systems operate in iterative loops of observation, thought, and action, adapting their strategies dynamically as new information becomes available \cite{yao2023react, shinn2023reflexion}.
+
+    A core innovation enabling this paradigm is the capacity for LLM-based agents to autonomously invoke external tools—APIs, databases, code interpreters, and domain-specific calculators—thereby extending their capabilities far beyond text generation \cite{schick2023toolformer}. The ReAct framework, for instance, demonstrated that interleaving chain-of-thought reasoning with concrete actions (such as querying a search engine or executing a calculation) substantially improves both the accuracy and interpretability of agent behavior \cite{yao2023react}. Reflexion further advanced this paradigm by introducing verbal self-reflection, enabling agents to learn from prior failures without any gradient-based parameter updates \cite{shinn2023reflexion}. These architectural patterns form the cognitive backbone of modern agentic systems.
+
+    The agentic paradigm extends naturally to \textit{multi-agent} settings, where multiple specialized agents collaborate, debate, or divide labor to tackle problems that exceed the capacity of any single agent \cite{wu2023autogen, guo2024multiagents}. Multi-agent conversation frameworks such as AutoGen allow developers to compose heterogeneous agent teams—comprising planners, executors, critics, and domain experts—that coordinate through structured dialogue to solve complex, multi-step tasks \cite{wu2023autogen}. This mirrors organizational structures in human enterprises, where specialized roles collaborate toward shared objectives.
+
+    Cognitive architecture research has formalized the internal structure of language agents into modular components: perception (processing multimodal inputs), memory (maintaining short-term working context and long-term knowledge retrieval via vector databases), reasoning (deliberative planning and reflection), and action (tool invocation and environmental interaction) \cite{sumers2023cognitive}. Generative agent simulations have demonstrated that when these components are combined with persistent memory streams and reflection mechanisms, agents exhibit remarkably human-like behaviors including planning, reacting to novel stimuli, and forming collaborative relationships \cite{park2023generative}.
+
+    \textbf{Agentic AI in Business Process Management}
+
+    The application of agentic AI to business process management (BPM) represents a particularly consequential frontier of this paradigm. A qualitative study by Vu et al.~\cite{vu2025abpm}, involving semi-structured interviews with 22 BPM practitioners across manufacturing, telecommunications, professional services, and other industries, reveals that practitioners anticipate agents will enhance operational efficiency, improve data quality, ensure better regulatory compliance, and enable scalability through automation. At the same time, practitioners caution against risks including bias from flawed training data, over-reliance on automation that diminishes human judgment, cybersecurity threats, job displacement, and opaque decision-making. These dual perspectives underscore the need for robust governance frameworks that balance agent autonomy with organizational control \cite{vu2025abpm, dumas2023abpms}.
+
+    The concept of \textit{agentic Business Process Management} (ABPM) formalizes this integration, defining it as the governed introduction of AI agents into business processes across the full BPM lifecycle—from process discovery and design through execution, monitoring, and optimization \cite{vu2025abpm, kampik2024lpm}. Unlike earlier automation paradigms such as Robotic Process Automation (RPA), which focus on automating simple, rule-based tasks, agentic BPM envisions agents that exhibit goal-directed autonomy, environmental adaptability, and self-learning capabilities \cite{haase2024rpa, flechsig2019rpa}. RPA implementations have faced notable challenges, with 30--50\% of initial projects failing during deployment, often due to technical limitations and resistance to automation \cite{hindle2017rpa}. Agentic AI promises to transcend these constraints by handling complex, unstructured tasks that require contextual reasoning and cross-process coordination \cite{vu2025abpm, estrada2024llmbpm}.
+
+    Practitioners in the Vu et al. study identified several high-value use cases for agentic AI, including process monitoring to detect inefficiencies and suggest improvements, predictive analytics to forecast trends, master data maintenance, supply chain optimization, and automated quality control \cite{vu2025abpm}. Critical requirements for successful deployment include clear governance structures, configurable autonomy levels (granting agents flexibility in low-risk areas while restricting them in high-risk scenarios), comprehensive audit logging, compliance with data protection regulations, and seamless integration with existing workflows \cite{vu2025abpm, rosemann2024bpmai}.
+
+    Huang~\cite{huang2025agents} provides a complementary perspective, examining how AI agents restructure enterprise business workflows. Rather than merely automating isolated tasks, agentic AI introduces new organizational dynamics—autonomy, adaptability, and continuous self-improvement—that fundamentally challenge traditional BPM principles centered on structure, control, and standardization \cite{huang2025agents, bennoit2024llmbpm}. This necessitates strategic adaptations: designing workflows that balance human and agent contributions, redefining human roles from executors to collaborators and supervisors, evolving static process models to support adaptive agent behavior, and implementing robust performance metrics and governance frameworks to monitor outcomes \cite{vu2025abpm, huang2025agents, vidgof2023llmbpm}.
+
+    The implications of agentic AI extend across domains. In scientific research, agents autonomously design and execute experiments; in software engineering, they debug, refactor, and deploy code; and in enterprise settings, they orchestrate complex business workflows \cite{durante2024agentai, weng2023agents}. Crucially for energy and industrial applications, the agentic paradigm offers a pathway to continuous, autonomous monitoring and decision-making at a scale and speed that human operators cannot match. The capacity for agents to reason about domain-specific constraints (e.g., IPMVP protocols, ASHRAE guidelines), invoke analytical tools (regression engines, simulation software), and produce auditable documentation positions agentic AI as a transformative technology for Measurement and Verification \cite{chase2022langchain, xi2023agents}.
+
+    \textbf{Agentic M\&V: The Missing Link}
+    
+    Autonomous AI agents performing real-time Measurement and Verification (M\&V) represent the critical solution to this bottleneck. These agents monitor, report, and optimize resource flows continuously, preventing resource scarcity from constraining industrial and AI infrastructure growth. Without agentic M\&V frameworks, the scaling of both renewable energy integration and AI deployment becomes unsustainable.
+
+    \textbf{From Static to Real-Time Agentic M\&V}
+    
+    Traditional M\&V approaches—reactive, manual, and periodic—are fundamentally inadequate for managing the dynamic interplay between AI workloads and grid constraints. Monthly utility bills or quarterly audits cannot guide real-time decisions in environments where computational loads and renewable generation vary by the second.
+    
+    Agentic M\&V transforms this paradigm through:
+    \begin{itemize}
+        \item \textbf{Autonomy:} Agents actively respond to measured data. When data center cooling loads spike or renewable generation dips, agents can autonomously shift non-critical compute tasks to regions with favorable grid conditions or excess renewable capacity.
+        \item \textbf{Granularity:} Rather than building-level aggregation, agents measure at chip, machine, or process levels, enabling precise optimization and verification.
+        \item \textbf{Verifiability:} Using cryptographic methods and distributed ledgers, agents provide audit-ready ``proof of efficiency'' without manual intervention, crucial for regulatory compliance and environmental reporting.
+    \end{itemize}
+
+
+    \textbf{Addressing AI's Resource Demands}
+    
+    AI systems are inherently resource-intensive, with training large models and running inference at scale consuming tremendous energy. The financial costs alone can exclude academics, students, and researchers—particularly from emerging economies—from participating in AI research \cite{schwartz2019green}. Beyond accessibility concerns, the environmental impact demands urgent attention as AI deployment accelerates globally \cite{strubell2019energy, ieee2025access}. The AI-energy bottleneck manifests in several ways:
+    \begin{itemize}
+        \item \textbf{Dynamic Load Management:} Agentic frameworks enable AI clusters to participate in demand response programs. By verifying precisely how much power can be curtailed during grid stress events, AI facilities reduce operational costs and avoid regulatory constraints while maintaining grid stability.
+        \item \textbf{Resource Transparency:} For AI deployment to maintain social license and regulatory approval, transparent tracking of water usage (for cooling), environmental footprints, and energy sources is essential. Agentic M\&V provides unforgeable, real-time data satisfying ESG requirements automatically \cite{energies2024}.
+        \item \textbf{Grid Integration:} As AI workloads grow, their integration with renewable energy sources becomes critical. Agents can coordinate compute scheduling with renewable generation patterns, maximizing clean energy utilization.
+    \end{itemize}
+
+
+    \textbf{Breaking the Bottleneck: Industrial Implications}
+    
+    When M\&V transitions from manual processes to autonomous agentic systems, industry shifts from scarcity management to abundance optimization. The AI-energy bottleneck dissolves when:
+    \begin{itemize}
+        \item \textbf{Grid Interaction:} Facilities become ``prosumers,'' with verified excess energy or demand flexibility tradeable on grid markets.
+        \item \textbf{Predictive Maintenance:} Agents detect micro-fluctuations in power consumption signaling equipment degradation before failures occur, reducing downtime and energy waste.
+        \item \textbf{Environmental Accounting:} Automated, real-time tracking of embedded resources enables ``Green Computing'' and ``Green Manufacturing'' to become economically viable and verifiable.
+    \end{itemize}
+    
+    \textit{The fundamental principle: what cannot be measured cannot be managed, and what cannot be managed autonomously cannot scale. Agentic M\&V transforms energy from a fixed constraint into a programmable, optimizable resource.}
+
+    \textbf{Evidence of Criticality for Industrial Flourishing}
+    
+    The relationship between agentic M\&V frameworks and industrial flourishing extends beyond theoretical potential to demonstrated empirical impact. A review of ten diverse studies—from ceramic manufacturing to campus-scale building infrastructure—reveals that agentic M\&V frameworks are critical because they simultaneously resolve three interdependent challenges: providing data infrastructure for AI performance, embedding human-centric explainability, and rigorously verifying benefits \cite{fernandez2025, moraliyage2022}.
+    
+    Implementations employing methods like federated learning and real-time edge analytics have achieved substantial benefits:
+    \begin{itemize}
+        \item \textbf{Operational Precision:} 94\% predictive accuracy and a 67\% reduction in false positives in manufacturing contexts \cite{fernandez2025}.
+        \item \textbf{Resource Efficiency:} Energy consumption reductions ranging from 20\% to over 90\% in optimized supply chains \cite{ranpara2025, gosmar2025}.
+        \item \textbf{Economic Viability:} Payback periods as short as 1.6 years with significant Net Present Value (€447,300 over five years) in industrial deployments \cite{fernandez2025}.
+    \end{itemize}
+    
+    \textbf{Causal Mechanisms and Mutual Reinforcement}
+    
+    The criticality of these frameworks arises from a consistent three-stage mechanism: \textbf{Data Enhancement $\rightarrow$ AI Capability Amplification $\rightarrow$ Industrial Outcome Improvement}. Better measuring infrastructure (M\&V) enables more accurate AI models, which then drive superior industrial outcomes. This creates a mutually reinforcing cycle where enhanced capabilities build human operator trust, leading to broader adoption and further data generation \cite{alghieth2025}.
+    
+    However, effectiveness depends on overcoming ``evaluation imbalance.'' Current assessments are heavily skewed toward technical metrics (83\%) while neglecting human (30\%) and safety factors, leading to systems that succeed in benchmarks but fail in deployment \cite{meimandi2025}. True flourishing requires frameworks that balance autonomy with explainability—pure automation without verification fails to build trust, while measurement without agentic adaptation cannot respond to the speed of modern grid dynamics.
+
+
+
+    \textbf{The Twin Transition Synergy}
+    
+    The ``Twin Transition''—the simultaneous evolution of digital and green technologies—requires agentic M\&V as its enabling infrastructure. By creating high-fidelity digital feedback loops for physical resource flows, industrial output can decouple from environmental degradation while AI systems optimize their own resource consumption.
+    
+    This creates a virtuous cycle addressing the bottleneck:
+    \begin{enumerate}
+        \item Advanced AI enables more sophisticated M\&V agents
+        \item Better M\&V optimizes energy use across AI and industrial systems
+        \item Optimized energy use reduces operational costs and environmental impact
+        \item Lower costs and proven sustainability enable expanded AI and industrial capacity
+        \item Grid stability is maintained despite growing computational demands
+    \end{enumerate}
+    
+    Without this agentic approach to real-time M\&V, the AI-energy bottleneck will constrain both the deployment of AI systems and the transition to renewable energy, as the complexity of managing distributed, variable resources exceeds human capability at scale \cite{ieee2025, aceee2024}.
+    \item Mathematical tools 
+    \item Process
+\end{itemize}
+
+\textbf{Proposed Agentic Architecture: The ITV M\&V Platform}
+
+To operationalize these principles, we propose a unified agentic architecture---the \textbf{ITV M\&V Platform}. This system acts as a central hub that orchestrates user inputs across three specialized ``Engines,'' each corresponding to a critical phase of the M\&V lifecycle. The architecture is powered by a central \textbf{Orchestrator} (an LLM-powered conversational layer) that routes requests based on user intent.
+
+\begin{enumerate}
+    \item \textbf{Strategy Engine:} Analyzing unstructured user input (e.g., natural language descriptions of facilities and retrofits) to extract key features such as load variability and schedules. It applies selection logic to recommend M\&V options and identifies independent variables directly from text.
+    \item \textbf{Analytics Engine:} Interprets statistical outputs to generate human-readable QA/QC reports and suggests remediation actions (e.g., ``increase monitoring time interval'') when models fail to converge or meet accuracy thresholds.
+    \item \textbf{Documentation Engine:} Generates templated M\&V Plans from structured data, drafts risk matrices and responsibility assignments, and produces formatted final reports with narrative explanations, ensuring comprehensive audit trails.
+\end{enumerate}
+
+This architecture leverages Large Language Model (LLM) technology not just for interface, but as a core processing component for semantic analysis and decision support, supported by vector databases for retrieving standardized M\&V rules and templates.
+
+Functionally, the platform operates through a cyclical multi-agent workflow. First, the \textbf{Orchestrator} decomposes a high-level user request (e.g., ``verify savings for the chiller retrofit'') into specific sub-tasks. It then delegates these tasks to the appropriate engine: the Strategy Engine determines the optimal IPMVP Option, the Analytics Engine executes the necessary regression models on energy data, and the Documentation Engine synthesizes the results into a compliant report. Throughout this process, a dedicated \textbf{Reviewer Agent} evaluates intermediate outputs against established protocols to ensure technical accuracy before the final deliverables are presented to the user.
+
+\textbf{Role of AI and Assistance}
+
+\begin{itemize}
+    \item Chatbots
+    \item LLM/Reason
+    \item Agentic AI
+\end{itemize}
+
+% ====================================================================
+%  SECTION — Hybrid RLHF Architecture
+% ====================================================================
+\section{Constrained Expert-Aligned RLHF for Agentic M\&V}
+
+\subsection{Research Question and Hypotheses}
+
+We ask the following central question:
+
+\textit{Can expert-aligned reinforcement learning improve the quality, usefulness, and trustworthiness of an agentic industrial M\&V assistant while preserving statistical rigor through deterministic analytics and hard governance constraints?}
+
+\noindent This yields three testable hypotheses:
+\begin{enumerate}
+    \item[\textbf{H1}] Expert-aligned policy optimization (DPO/PPO) improves output quality and evaluator preference over the deterministic AIM-V baseline.
+    \item[\textbf{H2}] RLHF-trained routing and documentation agents achieve higher accuracy and usefulness than keyword-based routing and template-only generation.
+    \item[\textbf{H3}] A constrained hybrid architecture (RLHF + hard domain rules) reduces hallucinations and governance violations compared with an unconstrained LLM baseline.
+\end{enumerate}
+
+\subsection{Hybrid Architecture Design}
+
+The key architectural insight is that RLHF should optimize only the \emph{judgment-heavy} and \emph{language-heavy} components of the system, while \emph{deterministic} components remain untouched. The system is organized into four layers:
+
+\subsubsection{Layer 1: Deterministic Domain Layer}
+This layer is explicitly excluded from any learned policy optimization:
+\begin{itemize}
+    \item \textbf{Analytics Engine} — OLS regression fitting, R\textsuperscript{2}, CV(RMSE), NDBE, autocorrelation, Shapiro--Wilk normality tests, and fractional savings uncertainty (FSU) calculations per ASHRAE Guideline~14 Annex~B.
+    \item \textbf{QA/QC Thresholds} — Minimum R\textsuperscript{2} $\geq 0.75$, CV(RMSE) $\leq 20\%$, coefficient significance ($|t| \geq 2.0$, $p < 0.05$), and data completeness $\geq 95\%$.
+    \item \textbf{Rule Checkers} — IPMVP option selection logic, escalation triggers, and deviation log requirements.
+\end{itemize}
+
+\subsubsection{Layer 2: LLM Policy Layer (RLHF Target)}
+These components are candidates for preference optimization:
+\begin{itemize}
+    \item \textbf{Orchestration Policy} — Intent routing, question sequencing to elicit missing context, and tool invocation decisions. The baseline system uses keyword matching; the RLHF variant replaces this with a learned policy.
+    \item \textbf{Strategy Policy} — Generating human-readable rationale for M\&V option recommendations, suggesting independent variables with uncertainty communication, and flagging risks.
+    \item \textbf{Documentation Policy} — Producing evaluator-facing M\&V plans, risk matrices, and savings reports that are technically complete, clearly written, and audit-ready.
+    \item \textbf{Escalation Policy} — Drafting protocol deviation notices and recommending corrective actions when QA thresholds fail or data quality drops.
+\end{itemize}
+
+\subsubsection{Layer 3: Feedback and Preference Layer}
+This layer instruments the system for research data collection:
+\begin{itemize}
+    \item \textbf{Trace Logging} — Every orchestrator invocation produces a structured trace record capturing: user request, context, routing decision, candidate outputs, final output, timing, and downstream QA outcome. Traces are persisted as JSON-Lines for dataset construction.
+    \item \textbf{Scalar Feedback} — Evaluators score outputs on an 8-criterion rubric: technical correctness, protocol adherence, completeness, clarity, actionability, safety compliance, role-boundary compliance, and usefulness.
+    \item \textbf{Pairwise Preferences} — Evaluators compare two candidate outputs (e.g., baseline rule output vs.\ LLM output) and select the preferred one with a written rationale. These pairwise labels are the primary signal for reward model training and Direct Preference Optimization (DPO).
+\end{itemize}
+
+\subsubsection{Layer 4: Safety and Audit Layer}
+Hard constraints that no learned policy may violate:
+\begin{itemize}
+    \item \textbf{Role Boundary Enforcement} — The agent may not choose sampling designs, alter analysis plans, or select evaluation sites (evaluator-owned decisions per the operating framework).
+    \item \textbf{QA Escalation} — When model-level QA/QC fails, the system must attach an escalation notice before returning results.
+    \item \textbf{Savings Consistency} — Documentation outputs must reflect the actual R\textsuperscript{2} and CV(RMSE) from the analytics engine; unsupported claims are blocked.
+    \item \textbf{Assumption Disclosure} — Strategy recommendations must include explicit assumptions.
+    \item \textbf{Data Completeness} — Outputs are flagged when input data completeness falls below the 95\% threshold.
+\end{itemize}
+
+Every constraint check produces a structured verdict (pass/warn/block) that is appended to the trace record, creating an auditable chain of evidence for the paper.
+
+\subsection{Task Taxonomy}
+
+We decompose the system into six research tasks, each of which can serve as a labeled dataset and evaluation benchmark:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{c l l}
+\hline
+\textbf{Task} & \textbf{Description} & \textbf{RLHF Applicable} \\
+\hline
+A & Intent routing & Yes \\
+B & Missing-information questioning & Yes \\
+C & M\&V strategy recommendation & Yes (rationale) \\
+D & Risk and deviation interpretation & Yes \\
+E & Documentation generation & Yes \\
+F & Escalation under protocol deviations & Yes \\
+\hline
+G & OLS regression and QA/QC & No (deterministic) \\
+H & Savings calculation and FSU & No (deterministic) \\
+\hline
+\end{tabular}
+\caption{Task taxonomy. Tasks A--F are targets for preference optimization; Tasks G--H remain deterministic.}
+\label{tab:taxonomy}
+\end{table}
+
+\subsection{RLHF Methodology}
+
+We propose a staged optimization pipeline:
+
+\subsubsection{Stage 1: Supervised Fine-Tuning (SFT)}
+A base language model is fine-tuned on a supervised corpus of M\&V interactions, seeded from:
+\begin{itemize}
+    \item Synthetic industrial M\&V scenarios covering building and industrial site types, whole-facility and isolation cases, clean and noisy data, missing context, and protocol deviation cases.
+    \item Historical chat transcripts (e.g., the platform design conversations and framework interview transcripts stored in the repository).
+    \item Expert-authored gold-standard responses for each task in the taxonomy.
+\end{itemize}
+
+\subsubsection{Stage 2: Preference Dataset Construction}
+For each task, we generate two or more candidate outputs per prompt:
+\begin{enumerate}
+    \item Baseline deterministic output (current AIM-V rule/template system)
+    \item Raw LLM output (unconstrained)
+    \item Constrained LLM output (LLM + safety layer filtering)
+    \item Alternate prompt/decoding variants
+\end{enumerate}
+Evaluators then provide pairwise preferences with written rationales, producing the core RLHF training signal.
+
+\subsubsection{Stage 3: Reward Model Training}
+A reward model is trained to predict evaluator preference from (prompt, context, candidate output) tuples. We report held-out preference accuracy, calibration, and inter-rater agreement of the human labels.
+
+\subsubsection{Stage 4: Policy Optimization}
+We recommend \textbf{Direct Preference Optimization (DPO)} \cite{rafailov2023dpo} as the primary method for several reasons:
+\begin{itemize}
+    \item DPO is more stable than PPO for small-team research settings.
+    \item It is computationally cheaper (no separate reward model forward pass during training).
+    \item It produces cleaner experimental methodology for publication.
+    \item IPO \cite{azar2023ipo} serves as a robustness check.
+\end{itemize}
+Online PPO-style RLHF may be pursued as a follow-up if sufficient expert interaction volume is collected.
+
+\subsection{System Boundary Declaration}
+
+It is methodologically critical to declare the optimization boundary explicitly:
+
+\textbf{RLHF optimizes:}
+\begin{itemize}
+    \item Routing decisions (Task A)
+    \item Interactive elicitation (Task B)
+    \item Strategy explanations and rationale (Task C)
+    \item Risk interpretation and escalation wording (Tasks D, F)
+    \item Report and plan drafting (Task E)
+\end{itemize}
+
+\textbf{RLHF does not optimize:}
+\begin{itemize}
+    \item Regression coefficients or model selection
+    \item Savings equations or FSU calculations
+    \item QA/QC threshold values or pass/fail logic
+    \item Statistical test execution
+\end{itemize}
+
+This boundary is what makes the contribution defensible: the system improves \emph{communication and judgment} while preserving \emph{mathematical rigor}.
+
+% ====================================================================
+%  SECTION — Experimental Design
+% ====================================================================
+\section{Experimental Design}
+
+\subsection{Ablation Conditions}
+
+We compare five system configurations to isolate the contribution of each component:
+
+\begin{enumerate}
+    \item \textbf{Baseline AIM-V} — Current deterministic system: keyword routing, rule-based strategy, template documentation.
+    \item \textbf{Unconstrained LLM} — LLM-backed agents with no constraint layer or preference optimization.
+    \item \textbf{SFT-only AIM-V} — LLM agents fine-tuned on the supervised M\&V corpus, with constraint layer active.
+    \item \textbf{SFT + DPO AIM-V} — Preference-optimized agents with constraint layer active.
+    \item \textbf{SFT + DPO + Full Constraints} — Full system with all safety validators, escalation enforcement, and audit logging.
+\end{enumerate}
+
+\subsection{Evaluation Metrics}
+
+\subsubsection{Offline Metrics}
+\begin{itemize}
+    \item Routing accuracy (intent classification F1)
+    \item Expert-agreement rate on recommended M\&V strategy
+    \item Document completeness score (rubric-based)
+    \item Hallucination rate (claims not supported by analytics output)
+    \item Constraint-violation rate
+    \item Reward model held-out accuracy and calibration
+    \item Pairwise preference win rate vs.\ baseline
+\end{itemize}
+
+\subsubsection{Workflow Metrics}
+\begin{itemize}
+    \item Time to complete an M\&V planning task
+    \item Number of clarification turns needed
+    \item Number of evaluator overrides
+    \item Downstream acceptance of generated documentation
+    \item Consistency between documentation and analytics outputs
+\end{itemize}
+
+\subsubsection{Human Study Metrics}
+\begin{itemize}
+    \item Perceived usefulness (Likert scale)
+    \item Trust (Likert scale)
+    \item Cognitive load (NASA-TLX)
+    \item Willingness to use the system in a real evaluation workflow
+    \item Head-to-head preference against Baseline AIM-V and a plain LLM baseline
+\end{itemize}
+
+\subsection{Expert Feedback Rubric}
+
+Evaluators score each agent output on eight criteria using a 1--5 scale:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{l p{8cm}}
+\hline
+\textbf{Criterion} & \textbf{Definition} \\
+\hline
+Technical correctness & Output is factually and technically accurate \\
+Protocol adherence & Consistent with IPMVP/ASHRAE/evaluation protocol \\
+Completeness & All necessary information is present \\
+Clarity & Output is clear, well-organized, and unambiguous \\
+Actionability & Evaluator can act on the output without additional research \\
+Safety compliance & No unsupported claims, required disclosures present \\
+Role-boundary compliance & Agent stays within its authorized scope \\
+Usefulness & Output improves the evaluator's workflow \\
+\hline
+\end{tabular}
+\caption{Expert feedback rubric criteria.}
+\label{tab:rubric}
+\end{table}
+
+% ====================================================================
+%  SECTION — Implementation Phases
+% ====================================================================
+\section{Implementation Roadmap}
+
+The research proceeds in four phases:
+
+\subsection{Phase 1: Make AIM-V Research-Ready}
+\begin{itemize}
+    \item Add structured trace logging to every orchestrator invocation.
+    \item Add evaluator feedback capture (scalar + pairwise) via API endpoints.
+    \item Implement the hard constraint and safety layer.
+    \item Formalize the task taxonomy and expert rubric.
+    \item Freeze baseline system metrics for fair comparison.
+\end{itemize}
+
+\subsection{Phase 2: Add LLM-Backed Policy Agents}
+\begin{itemize}
+    \item Replace keyword routing with an LLM orchestration policy.
+    \item Replace rule-only strategy explanation with an LLM strategy agent.
+    \item Replace template-only documentation with an LLM documentation agent.
+    \item Keep the analytics engine deterministic and unchanged.
+\end{itemize}
+
+\subsection{Phase 3: Run Preference Learning}
+\begin{itemize}
+    \item Collect expert pairwise comparisons across all six learnable tasks.
+    \item Train a reward model on evaluator preferences.
+    \item Optimize the policy model with DPO.
+    \item Add constraint filters and validate safety layer integration.
+\end{itemize}
+
+\subsection{Phase 4: Run the Study and Write the Paper}
+\begin{itemize}
+    \item Benchmark all five ablation conditions.
+    \item Conduct expert evaluation with practicing M\&V professionals.
+    \item Run ablation analyses to isolate component contributions.
+    \item Perform error analysis and document failure modes.
+    \item Address threats to validity (evaluator sample size, domain coverage, reward model calibration).
+\end{itemize}
+
+% ====================================================================
+%  SECTION — Contribution Claim
+% ====================================================================
+\section{Contribution and Novelty}
+
+The publishable novelty of this work is \emph{not} RLHF applied to a chatbot. It is the combination of:
+
+\begin{enumerate}
+    \item \textbf{Industrial M\&V domain grounding} — The system is built on IPMVP, ASHRAE Guideline~14, and DOE ITV protocols, with a full deterministic analytics engine.
+    \item \textbf{Expert preference alignment} — Evaluator feedback drives reward model training and DPO, producing policies aligned with M\&V professional judgment.
+    \item \textbf{Constrained multi-agent orchestration} — Hard domain rules enforce role boundaries, data quality thresholds, escalation requirements, and savings consistency.
+    \item \textbf{Deterministic statistical verification} — The analytics layer (OLS, QA/QC, FSU) is explicitly excluded from RLHF, preserving mathematical defensibility.
+    \item \textbf{Auditability and governance} — Every decision, constraint check, and evaluator override is traced, supporting regulatory and research reproducibility requirements.
+\end{enumerate}
+
+\noindent The resulting framing is:
+
+\begin{quote}
+\textit{A constrained, expert-aligned multi-agent assistant for industrial M\&V that combines deterministic analytics with preference-optimized language policies.}
+\end{quote}
+
+\begin{thebibliography}{99}
+
+\bibitem{energies2024}
+E. Borowski et al.,
+``Measurement and Verification Methods and Uncertainty in Energy Savings Estimation,''
+\textit{Energies}, vol. 17, no. 3, p. 649, 2024.
+Available: \url{https://www.mdpi.com/1996-1073/17/3/649}
+
+\bibitem{ieee2025}
+``AI-Enhanced Energy Management and Verification Systems,''
+\textit{IEEE Xplore}, 2025.
+Available: \url{https://ieeexplore.ieee.org/document/10849561}
+
+\bibitem{aceee2024}
+``AI Energy Bottleneck and Grid Integration Challenges,''
+\textit{ACEEE Summer Study on Energy Efficiency in Buildings}, 2024.
+Available: \url{https://www.aceee.org/sites/default/files/proceedings/ssb24/pdfs/20240722163142953_ac7adcc9-3b39-40d2-9267-2922ffe2449a.pdf}
+
+\bibitem{strubell2019energy}
+E. Strubell, A. Ganesh, and A. McCallum,
+``Energy and Policy Considerations for Deep Learning in NLP,''
+\textit{Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics (ACL)}, Florence, Italy, July 2019.
+Available: \url{https://arxiv.org/abs/1906.02243}
+
+\bibitem{schwartz2019green}
+R. Schwartz, J. Dodge, N. A. Smith, and O. Etzioni,
+``Green AI,''
+\textit{arXiv preprint arXiv:1907.10597}, 2019.
+Available: \url{https://arxiv.org/abs/1907.10597}
+
+\bibitem{nature2025ai}
+``AI's Growing Energy Appetite Threatens Climate Goals,''
+\textit{Nature}, 2025.
+Available: \url{https://www.nature.com/articles/d41586-025-00616-z}
+
+\bibitem{iea2024electricity}
+International Energy Agency,
+``Electricity 2024: Analysis and Forecast to 2026,''
+\textit{IEA Reports}, 2024.
+Available: \url{https://www.iea.org/reports/electricity-2024/executive-summary}
+
+\bibitem{ieee2025access}
+``AI-Driven Energy Management Systems for Sustainable Computing Infrastructure,''
+\textit{IEEE Access}, vol. 13, 2025.
+doi: 10.1109/ACCESS.2025.3532853
+
+\bibitem{fernandez2025}
+A. Fernández-Miguel et al.,
+``Agentic AI in Smart Manufacturing: Enabling Human-Centric Predictive Maintenance Ecosystems,''
+\textit{Applied Sciences}, 2025.
+
+\bibitem{moraliyage2022}
+H. Moraliyage et al.,
+``A Robust Artificial Intelligence Approach with Explainability for Measurement and Verification of Energy Efficient Infrastructure for Net Zero Carbon Emissions,''
+\textit{Italian National Conference on Sensors}, 2022.
+
+\bibitem{gosmar2025}
+D. Gosmar, A. C. Pallotta, and G. Zenezini,
+``Agentic AI Sustainability Assessment for Supply Chain Document Insights,'' 2025.
+
+\bibitem{gallagher2018}
+C. V. Gallagher et al.,
+``From M\&V to M\&T: An Artificial Intelligence-Based Framework for Real-Time Performance Verification of Demand-Side Energy Savings,''
+\textit{2018 International Conference on Smart Energy Systems and Technologies (SEST)}, 2018.
+
+\bibitem{alghieth2025}
+M. Alghieth,
+``Sustain AI: A Multi-Modal Deep Learning Framework for Carbon Footprint Reduction in Industrial Manufacturing,''
+\textit{Sustainability}, 2025.
+
+\bibitem{ranpara2025}
+R. Ranpara,
+``Energy-Efficient Green AI Architectures for Circular Economies Through Multi-Layered Sustainable Resource Optimization Framework,''
+\textit{Discover Sustainability}, 2025.
+
+\bibitem{chinnathai2023}
+M. K. Chinnathai and B. Alkan,
+``A Digital Life-Cycle Management Framework for Sustainable Smart Manufacturing in Energy Intensive Industries,''
+\textit{Journal of Cleaner Production}, 2023.
+
+\bibitem{sodhro2019}
+A. Sodhro, S. Pirbhulal, and V. H. C. de Albuquerque,
+``Artificial Intelligence-Driven Mechanism for Edge Computing-Based Industrial Applications,''
+\textit{IEEE Transactions on Industrial Informatics}, 2019.
+
+\bibitem{suboyin2023}
+A. Suboyin et al.,
+``Environomics Framework for Sustainable Business Practices: Industrial Case Studies on True Impact Reduction and Process Optimization Through AI,''
+\textit{Day 1 Tue, January 17}, 2023.
+
+\bibitem{meimandi2025}
+K. Meimandi et al.,
+``The Measurement Imbalance in Agentic AI Evaluation Undermines Industry Productivity Claims,''
+\textit{arXiv preprint arXiv}, 2025.
+
+\bibitem{wang2023agents}
+L. Wang et al.,
+``A Survey on Large Language Model based Autonomous Agents,''
+\textit{Frontiers of Computer Science}, vol. 18, no. 6, 2024.
+Available: \url{https://arxiv.org/abs/2308.11432}
+
+\bibitem{xi2023agents}
+Z. Xi et al.,
+``The Rise and Potential of Large Language Model Based Agents: A Survey,''
+\textit{arXiv preprint arXiv:2309.07864}, 2023.
+Available: \url{https://arxiv.org/abs/2309.07864}
+
+\bibitem{yao2023react}
+S. Yao et al.,
+``ReAct: Synergizing Reasoning and Acting in Language Models,''
+\textit{Proceedings of the International Conference on Learning Representations (ICLR)}, 2023.
+Available: \url{https://arxiv.org/abs/2210.03629}
+
+\bibitem{shinn2023reflexion}
+N. Shinn, F. Cassano, A. Gopinath, K. Narasimhan, and S. Yao,
+``Reflexion: Language Agents with Verbal Reinforcement Learning,''
+\textit{Advances in Neural Information Processing Systems (NeurIPS)}, 2023.
+Available: \url{https://arxiv.org/abs/2303.11366}
+
+\bibitem{schick2023toolformer}
+T. Schick et al.,
+``Toolformer: Language Models Can Teach Themselves to Use Tools,''
+\textit{Advances in Neural Information Processing Systems (NeurIPS)}, 2023.
+Available: \url{https://arxiv.org/abs/2302.04761}
+
+\bibitem{wu2023autogen}
+Q. Wu et al.,
+``AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation,''
+\textit{arXiv preprint arXiv:2308.08155}, 2023.
+Available: \url{https://arxiv.org/abs/2308.08155}
+
+\bibitem{guo2024multiagents}
+T. Guo et al.,
+``Large Language Model based Multi-Agents: A Survey of Progress and Challenges,''
+\textit{arXiv preprint arXiv:2402.01680}, 2024.
+Available: \url{https://arxiv.org/abs/2402.01680}
+
+\bibitem{sumers2023cognitive}
+T. R. Sumers, S. Yao, K. Narasimhan, and T. L. Griffiths,
+``Cognitive Architectures for Language Agents,''
+\textit{Transactions on Machine Learning Research (TMLR)}, 2024.
+Available: \url{https://arxiv.org/abs/2309.02427}
+
+\bibitem{park2023generative}
+J. S. Park et al.,
+``Generative Agents: Interactive Simulacra of Human Behavior,''
+\textit{Proceedings of the ACM Symposium on User Interface Software and Technology (UIST)}, 2023.
+Available: \url{https://arxiv.org/abs/2304.03442}
+
+\bibitem{durante2024agentai}
+Z. Durante et al.,
+``Agent AI: Surveying the Horizons of Multimodal Interaction,''
+\textit{arXiv preprint arXiv:2401.03568}, 2024.
+Available: \url{https://arxiv.org/abs/2401.03568}
+
+\bibitem{weng2023agents}
+L. Weng,
+``LLM Powered Autonomous Agents,''
+\textit{Lil'Log}, June 2023.
+Available: \url{https://lilianweng.github.io/posts/2023-06-23-agent/}
+
+\bibitem{chase2022langchain}
+H. Chase,
+``LangChain,''
+2022.
+Available: \url{https://github.com/langchain-ai/langchain}
+
+\bibitem{vu2025abpm}
+H. Vu, N. Klievtsova, H. Leopold, S. Rinderle-Ma, and T. Kampik,
+``Agentic Business Process Management: Practitioner Perspectives on Agent Governance in Business Processes,''
+\textit{arXiv preprint arXiv:2504.03693}, 2025.
+Available: \url{https://arxiv.org/abs/2504.03693}
+
+\bibitem{huang2025agents}
+K. Huang,
+``AI Agents and Business Workflow,''
+in: K. Huang (eds) \textit{Agentic AI}, Progress in IS, Springer, Cham, 2025.
+
+\bibitem{dumas2023abpms}
+M. Dumas, F. Fournier, L. Limonad, A. Marrella, M. Montali, J. Rehse, R. Accorsi, D. Calvanese, G. Di Giacomo, D. Fahland, A. Gal, M. La Rosa, H. V\"olzer, and I. Weber,
+``AI-Augmented Business Process Management Systems: A Research Manifesto,''
+\textit{ACM Transactions on Management Information Systems}, vol. 14, no. 1, pp. 11:1--11:19, 2023.
+
+\bibitem{kampik2024lpm}
+T. Kampik et al.,
+``Large Process Models: A Vision for Business Process Management in the Age of Generative AI,''
+\textit{KI -- K\"unstliche Intelligenz}, 2024.
+
+\bibitem{haase2024rpa}
+J. Haase, W. Kremser, H. Leopold, J. Mendling, L. Onnasch, and R. Plattfaut,
+``Interdisciplinary Directions for Researching the Effects of Robotic Process Automation and Large Language Models on Business Processes,''
+\textit{Communications of the Association for Information Systems}, vol. 54, pp. 579--604, 2024.
+
+\bibitem{flechsig2019rpa}
+C. Flechsig, J. Lohmer, and R. Lasch,
+``Realizing the Full Potential of Robotic Process Automation Through a Combination with BPM,''
+\textit{Logistics Management}, 2019.
+
+\bibitem{hindle2017rpa}
+J. Hindle, M. Lacity, L. Willcocks, and S. Khan,
+``Robotic Process Automation,''
+Interim Executive Research Report, 2017.
+
+\bibitem{estrada2024llmbpm}
+B. Estrada-Torres, A. del-R\'{\i}o-Ortega, and M. Resinas,
+``Mapping the Landscape: Exploring LLM Applications in Business Process Management,''
+in: \textit{Enterprise, Business-Process and Information Systems Modeling}, pp. 22--31, 2024.
+
+\bibitem{rosemann2024bpmai}
+M. Rosemann, J. v. Brocke, A. Van Looy, and F. Santoro,
+``Business Process Management in the Age of AI -- Three Essential Drifts,''
+\textit{Information Systems and e-Business Management}, vol. 22, pp. 1--15, 2024.
+
+\bibitem{bennoit2024llmbpm}
+C. Bennoit, T. Greff, D. Baum, and I. A. Bajwa,
+``Identifying Use Cases for Large Language Models in the Business Process Management Lifecycle,''
+in: \textit{2024 26th International Conference on Business Informatics (CBI)}, pp. 256--263, IEEE, 2024.
+
+\bibitem{vidgof2023llmbpm}
+M. Vidgof, S. Bachhofner, and J. Mendling,
+``Large Language Models for Business Process Management: Opportunities and Challenges,''
+2023.
+
+\bibitem{rafailov2023dpo}
+R. Rafailov, A. Sharma, E. Mitchell, S. Ermon, C. D. Manning, and C. Finn,
+``Direct Preference Optimization: Your Language Model is Secretly a Reward Model,''
+\textit{Advances in Neural Information Processing Systems (NeurIPS)}, 2023.
+Available: \url{https://arxiv.org/abs/2305.18290}
+
+\bibitem{azar2023ipo}
+M. G. Azar, M. Rowland, B. Piot, D. Guo, D. Calandriello, M. Valko, and R. Munos,
+``A General Theoretical Paradigm to Understand Learning from Human Feedback,''
+\textit{arXiv preprint arXiv:2310.12036}, 2023.
+Available: \url{https://arxiv.org/abs/2310.12036}
+
+\bibitem{ouyang2022rlhf}
+L. Ouyang et al.,
+``Training Language Models to Follow Instructions with Human Feedback,''
+\textit{Advances in Neural Information Processing Systems (NeurIPS)}, 2022.
+Available: \url{https://arxiv.org/abs/2203.02155}
+
+\bibitem{christiano2017rlhf}
+P. F. Christiano, J. Leike, T. Brown, M. Milber, S. Marber, and D. Amodei,
+``Deep Reinforcement Learning from Human Preferences,''
+\textit{Advances in Neural Information Processing Systems (NeurIPS)}, 2017.
+Available: \url{https://arxiv.org/abs/1706.03741}
+
+\bibitem{stiennon2020summarize}
+N. Stiennon et al.,
+``Learning to Summarize with Human Feedback,''
+\textit{Advances in Neural Information Processing Systems (NeurIPS)}, 2020.
+Available: \url{https://arxiv.org/abs/2009.01325}
+
+\bibitem{schulman2017ppo}
+J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov,
+``Proximal Policy Optimization Algorithms,''
+\textit{arXiv preprint arXiv:1707.06347}, 2017.
+Available: \url{https://arxiv.org/abs/1707.06347}
+
+\bibitem{ziegler2019finetuning}
+D. M. Ziegler et al.,
+``Fine-Tuning Language Models from Human Preferences,''
+\textit{arXiv preprint arXiv:1909.08593}, 2019.
+Available: \url{https://arxiv.org/abs/1909.08593}
+
+\end{thebibliography}
+
+\end{document}

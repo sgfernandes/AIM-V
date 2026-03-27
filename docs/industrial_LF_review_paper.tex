@@ -1,0 +1,447 @@
+% ============================================================
+% Review Paper: Cost–Benefit Analysis and Literature Review
+% of Industrial Load Flexibility
+% ============================================================
+% Overleaf-ready template — upload this .tex file directly
+% Compile with pdflatex or lualatex
+% ============================================================
+
+\documentclass[12pt, a4paper, twocolumn]{article}
+
+% ---- Packages ----
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[english]{babel}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{amsmath,amssymb}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=blue
+}
+\usepackage{natbib}
+\bibliographystyle{plainnat}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{soul}              % for highlighting / markup
+\usepackage{lineno}            % line numbers for review
+\usepackage{setspace}
+\usepackage{titlesec}
+
+% ---- Formatting ----
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\itshape}{\thesubsubsection}{0.5em}{}
+
+% Uncomment below for line numbers during review
+% \linenumbers
+
+% ---- Custom commands ----
+\newcommand{\LF}{\textit{LF}}
+\newcommand{\kW}{\,\text{kW}}
+\newcommand{\kWh}{\,\text{kWh}}
+\newcommand{\USD}{\$}
+\newcommand{\TODO}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
+
+% ============================================================
+\begin{document}
+
+% ---- Title Block ----
+\title{%
+  \textbf{Cost--Benefit Analysis and Literature Review of\\
+  Industrial Load Flexibility:\\
+  Financial Value, Stakeholder Impact, and\\
+  Utility Rebate Program Inventory}}
+
+\author{
+  Author One\thanks{Affiliation, e-mail}
+  \and
+  Author Two\thanks{Affiliation, e-mail}
+  \and
+  Author Three\thanks{Affiliation, e-mail}
+}
+
+\date{\today}
+
+\twocolumn[
+  \begin{@twocolumnfalse}
+    \maketitle
+    % ---- Abstract ----
+    \begin{abstract}
+    \noindent
+    Industrial load flexibility (\LF{}) — the ability of a facility's electrical demand to be shifted, shed, or modulated in response to economic, operational, or grid signals — is increasingly recognised as a valuable asset for large commercial and industrial (C\&I) consumers.  Despite its significance, no comprehensive review has simultaneously addressed (i)~the direct financial benefits of \LF{}, (ii)~the indirect and non-financial value created for internal stakeholders who may not directly benefit from utility bill reduction, and (iii)~the landscape of utility incentive and rebate programmes that reward \LF{}.  This paper fills that gap by synthesising cost--benefit evidence from the academic literature, industry case studies, and regulatory filings.  We further present an inventory of \LF{}-linked rebate programmes across major U.S.\ and international utility territories, documenting incentive magnitudes, calculation methodologies, and eligibility criteria.  Our findings indicate that \TODO{summarise key findings here}.  We conclude with a research agenda for quantifying the full value chain of \LF{} in an era of increasing electrification and behind-the-meter distributed energy resources.
+
+    \vspace{0.5em}
+    \noindent\textbf{Keywords:} load flexibility, demand management, industrial energy efficiency, utility rebate programmes, cost--benefit analysis, demand response, peak demand reduction, load shifting
+    \end{abstract}
+    \vspace{1em}
+  \end{@twocolumnfalse}
+]
+
+% ============================================================
+% TABLE OF CONTENTS (optional — remove for final submission)
+% ============================================================
+% \tableofcontents
+% \newpage
+
+% ============================================================
+\section{Introduction}
+\label{sec:introduction}
+% ============================================================
+
+\subsection{Background and Motivation}
+\TODO{Introduce the concept of load flexibility and why it matters for industrial electricity consumers.}
+
+\begin{itemize}[nosep]
+  \item Definition of load flexibility: the capacity of an industrial facility to adjust the timing, magnitude, or pattern of its electricity consumption in response to price signals, grid conditions, or operational objectives.
+  \item Historical context: evolution of demand-based tariff structures and demand-response programmes.
+  \item Growing relevance due to electrification of industrial processes, EV fleet charging, on-site generation, battery storage, and grid decarbonisation.
+\end{itemize}
+
+\subsection{Problem Statement}
+\TODO{Articulate the research gap.}
+
+\begin{itemize}[nosep]
+  \item Lack of a unified review combining direct financial, indirect financial, and non-financial value of \LF{}.
+  \item No comprehensive catalogue of utility \LF{} rebate/incentive programmes.
+  \item Need for actionable data to support capital-investment decisions and internal business cases.
+\end{itemize}
+
+\subsection{Research Questions}
+\begin{enumerate}[nosep]
+  \item What is the documented direct financial value (cost savings) of \LF{} for industrial consumers?
+  \item What indirect and non-financial benefits does \LF{} confer on internal stakeholders (e.g., operations, maintenance, sustainability, finance) who may not directly benefit from utility bill reduction?
+  \item What \LF{}-linked rebate and incentive programmes exist across utility territories, and how do they vary in magnitude, eligibility, and calculation methodology?
+\end{enumerate}
+
+\subsection{Scope and Delimitations}
+\TODO{Define geographic scope, industry sectors covered, date range of literature, exclusion criteria.}
+
+\subsection{Paper Organisation}
+\TODO{Briefly outline the structure of the remaining sections.}
+
+
+% ============================================================
+\section{Methodology}
+\label{sec:methodology}
+% ============================================================
+
+\subsection{Literature Search Strategy}
+\begin{itemize}[nosep]
+  \item Databases searched (e.g., Scopus, Web of Science, IEEE Xplore, Google Scholar, DOE EERE, ACEEE).
+  \item Search terms and Boolean queries.
+  \item Date range and language filters.
+  \item Grey literature: utility tariff books, regulatory dockets, trade publications, white papers.
+\end{itemize}
+
+\subsection{Inclusion and Exclusion Criteria}
+\TODO{Define criteria for including/excluding studies.}
+
+\begin{table}[H]
+\centering
+\caption{Inclusion / Exclusion Criteria}
+\label{tab:criteria}
+\begin{tabularx}{\columnwidth}{lX}
+\toprule
+\textbf{Criterion} & \textbf{Description} \\
+\midrule
+Population   & Industrial / large C\&I electricity consumers \\
+Intervention & \LF{} measures, enabling technologies, or tariff designs \\
+Outcome      & Financial savings, non-financial benefits, or rebate data \\
+Language     & English \\
+Date range   & \TODO{e.g., 2000--2026} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Data Extraction and Synthesis}
+\TODO{Describe how data were extracted, coded, and synthesised (narrative synthesis, meta-analysis, etc.).}
+
+\subsection{Utility Rebate Programme Inventory Method}
+\begin{itemize}[nosep]
+  \item Sources: utility tariff schedules, state PUC filings, DSIRE database, direct utility enquiry.
+  \item Data fields captured: utility name, territory, rate class, \LF{} threshold, incentive amount (\$/kW or \$/kWh), calculation formula, eligibility requirements, programme term.
+\end{itemize}
+
+
+% ============================================================
+\section{Fundamentals of Industrial Load Flexibility}
+\label{sec:fundamentals}
+% ============================================================
+
+\subsection{Definition and Characterisation}
+Load flexibility (\LF{}) can be characterised along several dimensions:
+\begin{itemize}[nosep]
+  \item \textbf{Magnitude} — the amount of demand (kW) that can be shifted, shed, or modulated.
+  \item \textbf{Duration} — how long a load adjustment can be sustained.
+  \item \textbf{Response time} — latency between a signal and realised load change.
+  \item \textbf{Recovery} — any rebound or payback load following a flexibility event.
+  \item \textbf{Frequency} — how often flexibility can be called upon within a period.
+\end{itemize}
+
+A common summary metric relates average demand to peak demand:
+\begin{equation}
+  \text{Load Factor} = \frac{\displaystyle\sum_{i=1}^{N} P_i \cdot \Delta t}{P_{\max} \cdot T} \times 100\%
+  \label{eq:lf}
+\end{equation}
+where higher values indicate a flatter, more flexible load profile.  However, \LF{} encompasses capabilities beyond this single ratio.
+
+\subsection{Barriers to Load Flexibility in Industrial Facilities}
+\begin{itemize}[nosep]
+  \item Rigid batch-process scheduling and shift patterns.
+  \item Seasonal or weather-driven load variability.
+  \item Start-up transients and coincident equipment operation.
+  \item Lack of visibility into real-time demand and limited sub-metering.
+  \item Organisational silos between energy management and production.
+\end{itemize}
+
+\subsection{Enabling Strategies and Technologies}
+\begin{itemize}[nosep]
+  \item Load shifting and scheduling optimisation.
+  \item Peak shaving via battery energy storage systems (BESS).
+  \item On-site generation dispatch and co-generation.
+  \item Demand-controlled ventilation and process staging.
+  \item Advanced metering, SCADA integration, and automated demand-response platforms.
+  \item Thermal energy storage for HVAC and process loads.
+\end{itemize}
+
+
+% ============================================================
+\section{Direct Financial Value of Load Flexibility}
+\label{sec:direct-value}
+% ============================================================
+
+\subsection{Impact on Demand Charges}
+\TODO{Review studies quantifying demand-charge savings from \LF{}.  Include representative ranges (\$/kW-month) by rate class.}
+
+\subsection{Impact on Energy Rates and Ratchet Clauses}
+\TODO{Discuss how limited \LF{} interacts with ratchet demand clauses, time-of-use rates, and real-time pricing.}
+
+\subsection{Impact on Transmission and Distribution Costs}
+\TODO{Review evidence on how \LF{} affects allocated T\&D costs under cost-of-service regulation.}
+
+\subsection{Total Cost-of-Electricity Sensitivity Analysis}
+\TODO{Present or summarise published models showing total \$/kWh as a function of \LF{} capability for representative industrial tariffs.}
+
+\begin{table}[H]
+\centering
+\caption{Representative Demand Charge Savings from \LF{}}
+\label{tab:savings}
+\begin{tabularx}{\columnwidth}{lccX}
+\toprule
+\textbf{Source} & \textbf{Baseline \LF{}} & \textbf{Improved \LF{}} & \textbf{Annual Savings} \\
+\midrule
+\TODO{} & \TODO{} & \TODO{} & \TODO{} \\
+\TODO{} & \TODO{} & \TODO{} & \TODO{} \\
+\TODO{} & \TODO{} & \TODO{} & \TODO{} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Case Studies}
+\TODO{Summarise 3--5 published industrial case studies with quantified savings.}
+
+
+% ============================================================
+\section{Indirect and Non-Financial Value of Load Flexibility}
+\label{sec:indirect-value}
+% ============================================================
+
+\subsection{Operational Reliability and Equipment Longevity}
+\TODO{Discuss how smoother load profiles reduce thermal cycling, mechanical stress, and unplanned downtime.}
+
+\subsection{Power Quality and Process Stability}
+\TODO{Link \LF{} to voltage stability, reduced flicker, and process yield.}
+
+\subsection{Grid Services and Demand Response Eligibility}
+\TODO{Explain how facilities with high \LF{} can participate in DR and ancillary-service markets, generating additional revenue streams.}
+
+\subsection{Sustainability and Carbon Reduction}
+\TODO{Review evidence that peak demand correlates with marginal emissions; quantify carbon value.}
+
+\subsection{Internal Stakeholder Value Mapping}
+\begin{table}[H]
+\centering
+\caption{Non-Financial Value of \LF{} by Internal Stakeholder Group}
+\label{tab:stakeholder}
+\begin{tabularx}{\columnwidth}{lX}
+\toprule
+\textbf{Stakeholder} & \textbf{Value Created} \\
+\midrule
+Operations     & Reduced peak-related curtailments; smoother scheduling; production continuity \\
+Maintenance    & Lower thermal stress; extended transformer/motor life \\
+Finance / Treasury & Predictable utility spend; reduced budget variance \\
+Sustainability / ESG & Lower Scope 2 emissions intensity; reporting metrics \\
+Procurement    & Stronger position in retail energy negotiations \\
+Capital Projects & Deferred substation/switchgear upgrades \\
+Risk Management & Reduced exposure to demand-ratchet penalties \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Organisational and Behavioural Factors}
+\TODO{Review literature on awareness, training, and incentive alignment that influences \LF{} outcomes.}
+
+
+% ============================================================
+\section{Inventory of Utility Load Flexibility Rebate Programmes}
+\label{sec:rebate-inventory}
+% ============================================================
+
+\subsection{Overview of Programme Landscape}
+\TODO{Summarise how many utilities offer \LF{}-linked incentives, geographic distribution, and trends over time.}
+
+\subsection{Programme Typology}
+\begin{enumerate}[nosep]
+  \item \textbf{Tariff-embedded \LF{} adjustments} — rate discount/premium tied to demonstrated \LF{}.
+  \item \textbf{Demand-side management (DSM) rebates} — capital incentives for \LF{}-enabling equipment.
+  \item \textbf{Custom/calculated incentives} — utility-specific formulas based on verified kW reduction or load-shape improvement.
+  \item \textbf{Performance-based incentives} — ongoing payments for sustained \LF{} above a threshold or participation in flexibility events.
+\end{enumerate}
+
+\subsection{Incentive Calculation Methods}
+\TODO{Describe common formulas (e.g., \$/kW-saved, percentage discount on demand charge, sliding-scale adjustments).}
+
+\subsection{Eligibility Requirements}
+\TODO{Summarise typical requirements: rate class, minimum demand, metering, M\&V protocols, pre-approval.}
+
+\subsection{Detailed Programme Inventory}
+
+\begin{table*}[ht]
+\centering
+\caption{Inventory of Utility \LF{} Rebate and Incentive Programmes (Representative Sample)}
+\label{tab:inventory}
+\small
+\begin{tabularx}{\textwidth}{llllXll}
+\toprule
+\textbf{Utility / Territory} & \textbf{State} & \textbf{Rate Class} & \textbf{LF Threshold} & \textbf{Incentive Description} & \textbf{Amount} & \textbf{Method} \\
+\midrule
+\TODO{Utility A} & \TODO{} & \TODO{} & \TODO{} & \TODO{} & \TODO{} & \TODO{} \\
+\TODO{Utility B} & \TODO{} & \TODO{} & \TODO{} & \TODO{} & \TODO{} & \TODO{} \\
+\TODO{Utility C} & \TODO{} & \TODO{} & \TODO{} & \TODO{} & \TODO{} & \TODO{} \\
+\TODO{Utility D} & \TODO{} & \TODO{} & \TODO{} & \TODO{} & \TODO{} & \TODO{} \\
+\TODO{Utility E} & \TODO{} & \TODO{} & \TODO{} & \TODO{} & \TODO{} & \TODO{} \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\TODO{Full inventory to be provided in supplementary material / appendix.}
+
+\subsection{Comparative Analysis of Programmes}
+\TODO{Analyse variation in incentive generosity, threshold stringency, and programme maturity across territories.}
+
+
+% ============================================================
+\section{Synthesis and Discussion}
+\label{sec:discussion}
+% ============================================================
+
+\subsection{Key Findings}
+\TODO{Synthesise main findings across the three review dimensions.}
+
+\subsection{Gaps in the Literature}
+\begin{itemize}[nosep]
+  \item Limited peer-reviewed studies quantifying non-financial \LF{} value.
+  \item Lack of standardised metrics for comparing rebate programme effectiveness.
+  \item Sparse data on \LF{} interactions with behind-the-meter DERs and storage.
+  \item \TODO{Additional gaps identified during review.}
+\end{itemize}
+
+\subsection{Implications for Industrial Energy Managers}
+\TODO{Translate findings into actionable guidance.}
+
+\subsection{Implications for Utility Programme Design}
+\TODO{Recommendations for utilities designing or revising \LF{} incentive structures.}
+
+\subsection{Limitations of This Review}
+\TODO{Discuss limitations: publication bias, geographic skew, data currency, etc.}
+
+
+% ============================================================
+\section{Future Research Directions}
+\label{sec:future}
+% ============================================================
+
+\begin{enumerate}[nosep]
+  \item Development of a standardised \LF{} value framework integrating direct, indirect, and non-financial benefits.
+  \item Empirical studies on the interaction of \LF{} with on-site BESS, solar PV, and other DERs.
+  \item Longitudinal analysis of rebate programme participation and verified savings.
+  \item Machine-learning approaches to real-time \LF{} forecasting and automated demand control.
+  \item Cross-jurisdictional policy analysis of \LF{} incentive design best practices.
+\end{enumerate}
+
+
+% ============================================================
+\section{Conclusion}
+\label{sec:conclusion}
+% ============================================================
+
+\TODO{Summarise the review's contributions, restate key findings, and close with a call to action for researchers and practitioners.}
+
+
+% ============================================================
+% REFERENCES
+% ============================================================
+% Use BibTeX: create a file called references.bib and
+% uncomment the line below.  Placeholder entries are included
+% inline for convenience during drafting.
+% \bibliography{references}
+
+\begin{thebibliography}{99}
+
+\bibitem{doe2020}
+U.S.\ Department of Energy, Office of Energy Efficiency \& Renewable Energy.
+\textit{Industrial Assessment Centers Database}.
+\url{https://iac.university}, 2020.
+
+\bibitem{eia2023}
+U.S.\ Energy Information Administration.
+\textit{Annual Electric Power Industry Report (EIA-861)}.
+2023.
+
+\bibitem{aceee2019}
+American Council for an Energy-Efficient Economy.
+\textit{The State of Industrial Energy Efficiency Programs}.
+Research Report, 2019.
+
+\bibitem{dsire2024}
+Database of State Incentives for Renewables \& Efficiency (DSIRE).
+\url{https://www.dsireusa.org/}, Accessed 2024.
+
+\TODO{Add remaining references.}
+
+\end{thebibliography}
+
+
+% ============================================================
+% APPENDICES
+% ============================================================
+\appendix
+
+\section{Full Utility \LF{} Rebate Programme Inventory}
+\label{app:inventory}
+\TODO{Include the complete programme-by-programme inventory table here or as supplementary material.}
+
+\section{Search Strategy Details}
+\label{app:search}
+\TODO{Full Boolean search strings, database-specific syntax, and PRISMA flow diagram.}
+
+\section{Data Extraction Template}
+\label{app:extraction}
+\TODO{Blank data extraction form used for each included study.}
+
+% ============================================================
+\end{document}

@@ -8,3 +8,6 @@ __pycache__/
 dist/
 build/
 .DS_Store
+data/traces/
+ITVPlatformEngines-*.json
+itv-mv_agentic_framework_chat_*.json

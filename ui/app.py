@@ -12,11 +12,9 @@ Run:
 The UI calls the agents directly (same-process).
 """
 
-import io
-import json
-import sys
 import os
-from typing import Any, Dict, List
+import sys
+from typing import Any, Dict
 
 import pandas as pd
 import streamlit as st
@@ -55,42 +53,12 @@ for key in [
 
 
 # ===================================================================
-#  Sidebar — Navigation
-# ===================================================================
-st.sidebar.title("⚡ AIM-V")
-st.sidebar.caption("Industrial Technology Validation — M&V Platform")
-
-page = st.sidebar.radio(
-    "Workflow Step",
-    ["1 — Strategy", "2 — Analytics", "3 — Documentation", "Full Pipeline"],
-    index=0,
-)
-
-st.sidebar.markdown("---")
-st.sidebar.markdown(
-    "**Agents:**  Strategy · Analytics · Documentation\n\n"
-    "Built on [IPMVP](https://evo-world.org/en/) · "
-    "[ASHRAE Guideline 14](https://www.ashrae.org/)"
-)
-
-
-# ===================================================================
 #  Helper utilities
 # ===================================================================
 def render_json(data: Any, label: str = "Result JSON") -> None:
     """Pretty-print a dict as expandable JSON."""
     with st.expander(label, expanded=False):
         st.json(data)
-
-
-def upload_csv(label: str, key: str) -> pd.DataFrame | None:
-    """File uploader that accepts CSV and returns a DataFrame."""
-    uploaded = st.file_uploader(label, type=["csv"], key=key)
-    if uploaded is not None:
-        df = pd.read_csv(uploaded)
-        st.dataframe(df.head(20), use_container_width=True)
-        return df
-    return None
 
 
 def render_qa_qc(result: Dict[str, Any]) -> None:
@@ -161,6 +129,88 @@ def render_qa_qc(result: Dict[str, Any]) -> None:
                 st.success("✅  FSU < 50% — savings uncertainty acceptable")
             else:
                 st.warning("⚠️  FSU ≥ 50% — savings uncertainty too high")
+        else:
+            col3.metric("FSU", "N/A")
+
+
+# ===================================================================
+#  Agentic Chat Interface
+# ===================================================================
+st.sidebar.title("💬 Agentic Interface")
+page = st.sidebar.radio(
+    "Navigate",
+    [
+        "1 — Strategy",
+        "2 — Analytics",
+        "3 — Documentation",
+        "4 — Full Pipeline",
+    ],
+)
+user_input = st.sidebar.text_input("Ask the M&V assistant:")
+
+if st.sidebar.button("Send"):
+    if user_input:
+        with st.spinner("Agent is thinking..."):
+            # Use a basic context for now, can be expanded
+            context = {
+                "baseline_df": st.session_state.baseline_df,
+                "post_df": st.session_state.post_df,
+            }
+            response = st.session_state.orchestrator.run(user_input, context)
+            st.session_state.last_response = response
+
+if "last_response" in st.session_state and st.session_state.last_response:
+    response = st.session_state.last_response
+    st.sidebar.markdown("---")
+    st.sidebar.markdown(f"**Agent:** `{response['agent']}`")
+    st.sidebar.markdown(f"**Intent:** `{response['intent']}`")
+    with st.sidebar.expander("View Full Response", expanded=False):
+        st.json(response)
+
+st.sidebar.markdown("---")
+st.sidebar.markdown(
+    "**Agents:**  Strategy · Analytics · Documentation\n\n"
+    "Built on [IPMVP](https://evo-world.org/en/) · "
+    "[ASHRAE Guideline 14](https://www.ashrae.org/)"
+)
+
+# ===================================================================
+#  Main content area
+# ===================================================================
+st.title("Agentic M&V Assistant")
+st.caption("A conversational interface for industrial Measurement & Verification workflows.")
+
+if "last_response" in st.session_state and st.session_state.last_response:
+    response = st.session_state.last_response
+    result = response.get("result", {})
+
+    if response["agent"] == "strategy":
+        st.header("M&V Strategy Recommendation")
+        st.markdown(f"**Recommended IPMVP Option:** `{result.get('recommended_option')}`")
+        st.markdown("**Rationale:**")
+        st.info(result.get('rationale', 'Not provided.'))
+        st.markdown("**Recommended Predictors:**")
+        st.code(", ".join(result.get('recommended_predictors', [])))
+        render_json(result)
+
+    elif response["agent"] == "analytics":
+        st.header("Baseline Analytics Results")
+        render_qa_qc(result)
+        if "model_equation" in result:
+            st.latex(result["model_equation"])
+        render_json(result)
+
+    elif response["agent"] == "documentation":
+        st.header("Generated Documentation")
+        st.markdown(
+            result.get("document_markdown", result.get("document", "No document generated."))
+        )
+        render_json(result)
+    else:
+        st.warning("Unknown agent response.")
+        render_json(response)
+else:
+    st.info("Ask a question in the sidebar to begin the M&V workflow.")
 
 
 # ===================================================================
