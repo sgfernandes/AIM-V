@@ -6,6 +6,7 @@ pandas
 statsmodels
 scipy
 streamlit
+altair
 pytest
 httpx
 openai
