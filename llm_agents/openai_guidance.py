@@ -18,8 +18,20 @@ class OpenAIGuidancePlanner:
     ) -> None:
         if load_dotenv is not None:
             load_dotenv()
-        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
-        self.model = model or os.getenv("OPENAI_MODEL", "gpt-5.4")
+
+        # On Streamlit Cloud, secrets are exposed via st.secrets, not env vars.
+        st_api_key = None
+        st_model = None
+        try:
+            import streamlit as st
+
+            st_api_key = st.secrets.get("OPENAI_API_KEY")
+            st_model = st.secrets.get("OPENAI_MODEL")
+        except Exception:
+            pass
+
+        self.api_key = api_key or st_api_key or os.getenv("OPENAI_API_KEY")
+        self.model = model or st_model or os.getenv("OPENAI_MODEL", "gpt-5.4")
 
     def is_available(self) -> bool:
         if not self.api_key:
