@@ -6,7 +6,7 @@ pandas
 statsmodels
 scipy
 streamlit
-altair
+altair==4.2.2
 pytest
 httpx
 openai
