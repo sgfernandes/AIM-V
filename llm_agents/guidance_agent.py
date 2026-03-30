@@ -239,15 +239,29 @@ class GuidanceAgent(BaseAgent):
             "context_updates": {},
         }
 
+    @staticmethod
+    def _has_strategy_info(message: str) -> bool:
+        """Detect if the user is providing strategy-relevant information."""
+        lower = message.lower()
+        cues = [
+            "whole facility", "single system", "single-system", "multi",
+            "cannot isolate", "can't isolate", "no isolation", "can be isolated",
+            "not.*isolated", "submeter", "metering",
+            "boundary", "option a", "option b", "option c", "option d",
+            "chiller", "hvac", "lighting", "boiler", "retrofit",
+            "upgrade", "facility", "building", "campus",
+        ]
+        return any(c in lower for c in cues)
+
     def run(self, message: str, context: Dict[str, Any]) -> Dict[str, Any]:
         working_context = dict(context)
-        stage = self._current_stage(working_context)
+        prev_stage = self._current_stage(working_context)
         context_updates = self._message_updates(message, working_context)
         if self.planner.is_available():
             llm_updates = self.planner.extract_context_updates(
                 message=message,
                 context=working_context,
-                stage=stage,
+                stage=prev_stage,
             )
             if llm_updates:
                 context_updates.update(llm_updates)
@@ -266,7 +280,18 @@ class GuidanceAgent(BaseAgent):
                 followup_result["context_updates"] = merged
                 return followup_result
 
-        if stage == "strategy":
+        # If the user is answering strategy questions but stage already advanced,
+        # re-run strategy with updated context so they get a proper acknowledgment.
+        if (
+            stage != "strategy"
+            and prev_stage != "strategy"
+            and self._has_strategy_info(message)
+            and working_context.get("strategy_output")
+        ):
+            result = self._run_strategy(message, working_context)
+            # Keep the stage at the actual next stage after strategy
+            result["current_stage"] = stage
+        elif stage == "strategy":
             result = self._run_strategy(message, working_context)
         elif stage == "analytics":
             result = self._run_analytics(message, working_context)
@@ -285,16 +310,25 @@ class GuidanceAgent(BaseAgent):
                 "context_updates": {},
             }
 
+        # Let the LLM rewrite the response to be conversational.
+        # Pass the user's message and any pending questions so the LLM
+        # can acknowledge what the user said before giving next steps.
         if self.planner.is_available():
+            prev_questions = context.get("_pending_questions", [])
             drafted = self.planner.draft_guidance(
                 message=message,
                 context=working_context,
                 result=result,
+                previous_questions=prev_questions,
             )
             if drafted.get("assistant_message"):
                 result["assistant_message"] = drafted["assistant_message"]
             if drafted.get("action_items"):
                 result["action_items"] = drafted["action_items"]
+
+        # Store pending questions for the next turn's context.
+        result.setdefault("context_updates", {})
+        result["context_updates"]["_pending_questions"] = result.get("action_items", [])
 
         merged_updates = dict(context_updates)
         merged_updates.update(result.get("context_updates", {}))

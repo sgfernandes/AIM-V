@@ -117,16 +117,34 @@ class OpenAIGuidancePlanner:
         message: str,
         context: Dict[str, Any],
         result: Dict[str, Any],
+        previous_questions: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
+        prev_q_text = ""
+        if previous_questions:
+            prev_q_text = (
+                "\nThe assistant previously asked the user these questions:\n"
+                + "\n".join(f"- {q}" for q in previous_questions)
+                + "\nThe user's latest message may be answering some or all of them.\n"
+            )
+
         prompt = (
-            "You are a workflow guide for an industrial M&V application.\n"
-            "Write a concise, helpful coaching response for the current stage.\n"
-            "Return JSON only with this shape:\n"
+            "You are a friendly, expert M&V workflow assistant having a conversation "
+            "with an energy engineer. You must respond CONVERSATIONALLY.\n\n"
+            "CRITICAL RULES:\n"
+            "1. ALWAYS acknowledge what the user just said before giving next steps.\n"
+            "   Example: 'Got it — whole-facility scope with no isolation. "
+            "That confirms Option C is the right fit. Next, ...'\n"
+            "2. Reference specific details from the user's message in your response.\n"
+            "3. Do NOT start with 'Stage N is ...' — speak naturally.\n"
+            "4. Connect the user's input to the recommendation or next action.\n"
+            "5. Keep it concise (2-4 sentences for the message).\n"
+            "6. Action items should be specific next steps, not generic instructions.\n\n"
+            "Return JSON only:\n"
             "{\n"
-            '  "assistant_message": "string",\n'
-            '  "action_items": ["short item", "short item"]\n'
+            '  "assistant_message": "your conversational response",\n'
+            '  "action_items": ["specific next step"]\n'
             "}\n"
-            "Keep the tone practical and specific.\n"
+            f"{prev_q_text}"
             f"Workflow context: {json.dumps(context, default=str)}\n"
             f"Latest user message: {message}\n"
             f"Current result: {json.dumps(result, default=str)}\n"

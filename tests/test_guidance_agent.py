@@ -12,7 +12,7 @@ class MockPlanner:
     def extract_context_updates(self, message, context, stage):
         return dict(self._updates)
 
-    def draft_guidance(self, message, context, result):
+    def draft_guidance(self, message, context, result, previous_questions=None):
         return dict(self._guidance)
 
     def metadata(self):
