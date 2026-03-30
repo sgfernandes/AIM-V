@@ -46,7 +46,7 @@ Optional environment variables:
 
 ```bash
 export OPENAI_API_KEY=your_key_here
-export OPENAI_MODEL=gpt-5.4
+export OPENAI_MODEL=gpt-4.1-mini
 ```
 
 Then launch the UI:
@@ -68,8 +68,10 @@ The easiest hosted option is Streamlit Community Cloud.
 
 ```toml
 OPENAI_API_KEY = "your_key_here"
-OPENAI_MODEL = "gpt-5.4"
+OPENAI_MODEL = "gpt-4.1-mini"
 ```
+
+If `OPENAI_MODEL` is omitted, AIM-V now defaults to `gpt-4.1-mini` and will try a small fallback model if the configured model is rejected.
 
 You can also use `.streamlit/secrets.toml.example` as a template for local development, but never commit a real `.streamlit/secrets.toml`.
 

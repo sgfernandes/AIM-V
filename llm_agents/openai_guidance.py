@@ -11,6 +11,9 @@ except ImportError:  # pragma: no cover - optional convenience only
 class OpenAIGuidancePlanner:
     """Optional OpenAI-backed helper for interpreting user replies and drafting guidance."""
 
+    DEFAULT_MODEL = "gpt-4.1-mini"
+    FALLBACK_MODELS = ("gpt-4.1-mini", "gpt-4o-mini")
+
     def __init__(
         self,
         api_key: Optional[str] = None,
@@ -31,7 +34,15 @@ class OpenAIGuidancePlanner:
             pass
 
         self.api_key = api_key or st_api_key or os.getenv("OPENAI_API_KEY")
-        self.model = model or st_model or os.getenv("OPENAI_MODEL", "gpt-5.4")
+        self.configured_model = (
+            model
+            or st_model
+            or os.getenv("OPENAI_MODEL")
+            or self.DEFAULT_MODEL
+        )
+        self.model = self.configured_model
+        self.active_model: Optional[str] = None
+        self.last_error: Optional[str] = None
 
     def is_available(self) -> bool:
         if not self.api_key:
@@ -45,14 +56,27 @@ class OpenAIGuidancePlanner:
     def metadata(self) -> Dict[str, Any]:
         return {
             "provider": "openai",
-            "model": self.model,
+            "model": self.active_model or self.configured_model,
+            "configured_model": self.configured_model,
             "enabled": self.is_available(),
+            "last_error": self.last_error,
+            "using_fallback": bool(
+                self.active_model and self.active_model != self.configured_model
+            ),
         }
 
     def _client(self):
         from openai import OpenAI
 
         return OpenAI(api_key=self.api_key)
+
+    def _candidate_models(self) -> List[str]:
+        models = [self.configured_model, *self.FALLBACK_MODELS]
+        unique_models: List[str] = []
+        for model in models:
+            if model and model not in unique_models:
+                unique_models.append(model)
+        return unique_models
 
     @staticmethod
     def _parse_json(text: str) -> Dict[str, Any]:
@@ -68,19 +92,42 @@ class OpenAIGuidancePlanner:
                 return json.loads(text[start : end + 1])
         return {}
 
-    def _json_response(self, prompt: str) -> Dict[str, Any]:
+    def _response_text(self, prompt: str) -> Optional[str]:
         if not self.is_available():
-            return {}
+            self.last_error = "OpenAI is not configured."
+            self.active_model = None
+            return None
 
-        try:
-            response = self._client().responses.create(
-                model=self.model,
-                input=prompt,
-            )
-            output_text = getattr(response, "output_text", "")
-            return self._parse_json(output_text)
-        except Exception:
+        errors: List[str] = []
+        client = self._client()
+        for candidate_model in self._candidate_models():
+            try:
+                response = client.responses.create(
+                    model=candidate_model,
+                    input=prompt,
+                )
+                output_text = getattr(response, "output_text", "")
+                if isinstance(output_text, str) and output_text.strip():
+                    self.active_model = candidate_model
+                    self.model = candidate_model
+                    self.last_error = None
+                    return output_text
+                errors.append(
+                    f"{candidate_model}: empty response text returned by OpenAI"
+                )
+            except Exception as exc:
+                errors.append(f"{candidate_model}: {exc}")
+
+        self.active_model = None
+        self.model = self.configured_model
+        self.last_error = errors[-1] if errors else "OpenAI request failed."
+        return None
+
+    def _json_response(self, prompt: str) -> Dict[str, Any]:
+        output_text = self._response_text(prompt)
+        if not output_text:
             return {}
+        return self._parse_json(output_text)
 
     def extract_context_updates(
         self,
@@ -168,9 +215,6 @@ class OpenAIGuidancePlanner:
         stage: str,
     ) -> Optional[str]:
         """Answer a follow-up or clarification question about previous results."""
-        if not self.is_available():
-            return None
-
         prompt = (
             "You are an expert M&V (Measurement and Verification) workflow assistant.\n"
             "The user is asking a follow-up or clarification question about a previous "
@@ -187,12 +231,5 @@ class OpenAIGuidancePlanner:
             f"User question: {message}\n\n"
             "Respond with plain text (not JSON)."
         )
-        try:
-            response = self._client().responses.create(
-                model=self.model,
-                input=prompt,
-            )
-            text = getattr(response, "output_text", "").strip()
-            return text if text else None
-        except Exception:
-            return None
+        text = self._response_text(prompt)
+        return text.strip() if text else None

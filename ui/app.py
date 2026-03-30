@@ -158,6 +158,8 @@ def render_chat_response(response: Dict[str, Any], compact: bool = False) -> Non
             mode = "OpenAI" if llm_guidance.get("enabled") else "Deterministic"
             model = llm_guidance.get("model", "n/a")
             st.caption(f"Guidance mode: {mode} · model: `{model}`")
+            if llm_guidance.get("last_error"):
+                st.warning(f"LLM request failed, using fallback guidance: {llm_guidance['last_error']}")
         for action in result.get("action_items", []):
             st.markdown(f"- {action}")
 
@@ -342,6 +344,8 @@ _planner = st.session_state.orchestrator.guidance.planner
 mode = "OpenAI" if (llm_guidance.get("enabled") or _planner.is_available()) else "Deterministic"
 current_stage = last_result.get("current_stage", "strategy").replace("_", " ").title()
 st.sidebar.markdown(f"**Mode:** `{mode}`")
+if llm_guidance.get("last_error"):
+    st.sidebar.caption(f"LLM status: request failed for `{llm_guidance.get('configured_model', 'configured model')}`")
 st.sidebar.markdown(f"**Stage:** `{current_stage}`")
 st.sidebar.markdown(
     f"**Data:** `{'Ready' if st.session_state.baseline_df is not None else 'Missing'}`"
