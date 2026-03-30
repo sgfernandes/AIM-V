@@ -142,3 +142,39 @@ class OpenAIGuidancePlanner:
                 str(item).strip() for item in action_items if str(item).strip()
             ]
         return output
+
+    def answer_followup(
+        self,
+        message: str,
+        context: Dict[str, Any],
+        stage: str,
+    ) -> Optional[str]:
+        """Answer a follow-up or clarification question about previous results."""
+        if not self.is_available():
+            return None
+
+        prompt = (
+            "You are an expert M&V (Measurement and Verification) workflow assistant.\n"
+            "The user is asking a follow-up or clarification question about a previous "
+            "recommendation or result. Answer their question directly and helpfully.\n\n"
+            "Rules:\n"
+            "- Answer the specific question the user asked.\n"
+            "- Reference the strategy, analytics, or documentation results from context.\n"
+            "- If they ask 'why' about a strategy recommendation, explain the IPMVP logic.\n"
+            "- Keep the answer concise (2-4 sentences).\n"
+            "- Do NOT just repeat the next workflow stage instructions.\n"
+            "- Do NOT ignore the question to push the workflow forward.\n\n"
+            f"Current stage: {stage}\n"
+            f"Workflow context: {json.dumps(context, default=str)}\n"
+            f"User question: {message}\n\n"
+            "Respond with plain text (not JSON)."
+        )
+        try:
+            response = self._client().responses.create(
+                model=self.model,
+                input=prompt,
+            )
+            text = getattr(response, "output_text", "").strip()
+            return text if text else None
+        except Exception:
+            return None

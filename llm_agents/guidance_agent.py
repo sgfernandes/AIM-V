@@ -204,6 +204,41 @@ class GuidanceAgent(BaseAgent):
             },
         }
 
+    @staticmethod
+    def _is_followup(message: str) -> bool:
+        """Detect if a message is a follow-up/clarification about a previous result."""
+        lower = message.lower().strip()
+        followup_cues = [
+            "why", "how come", "explain", "what do you mean", "tell me more",
+            "can you clarify", "elaborate", "reason", "justify", "could you explain",
+            "what is", "what are", "what does", "what's the difference",
+            "i don't understand", "not sure", "confused",
+            "that strategy", "that option", "that recommendation", "that plan",
+        ]
+        return any(cue in lower for cue in followup_cues)
+
+    def _handle_followup(self, message: str, context: Dict[str, Any], stage: str) -> Optional[Dict[str, Any]]:
+        """Use the LLM to answer follow-up questions about previous results."""
+        if not self.planner.is_available():
+            return None
+
+        answer = self.planner.answer_followup(
+            message=message,
+            context=context,
+            stage=stage,
+        )
+        if not answer:
+            return None
+
+        return {
+            "current_stage": stage,
+            "next_stage": stage,
+            "stage_status": "needs_input",
+            "assistant_message": answer,
+            "action_items": [],
+            "context_updates": {},
+        }
+
     def run(self, message: str, context: Dict[str, Any]) -> Dict[str, Any]:
         working_context = dict(context)
         stage = self._current_stage(working_context)
@@ -219,6 +254,18 @@ class GuidanceAgent(BaseAgent):
         working_context.update(context_updates)
 
         stage = self._current_stage(working_context)
+
+        # Handle follow-up / clarification questions about previous results
+        # instead of blindly advancing to the next stage.
+        if self._is_followup(message):
+            followup_result = self._handle_followup(message, working_context, stage)
+            if followup_result:
+                followup_result["llm_guidance"] = self.planner.metadata()
+                merged = dict(context_updates)
+                merged.update(followup_result.get("context_updates", {}))
+                followup_result["context_updates"] = merged
+                return followup_result
+
         if stage == "strategy":
             result = self._run_strategy(message, working_context)
         elif stage == "analytics":
