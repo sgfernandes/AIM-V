@@ -337,7 +337,9 @@ st.sidebar.caption("Chat-first guided workflow for strategy, analytics, and docu
 
 last_result = st.session_state.last_response.get("result", {}) if st.session_state.last_response else {}
 llm_guidance = last_result.get("llm_guidance", {})
-mode = "OpenAI" if llm_guidance.get("enabled") else "Deterministic"
+# Probe the planner directly so mode is correct even before the first chat message
+_planner = st.session_state.orchestrator.guidance.planner
+mode = "OpenAI" if (llm_guidance.get("enabled") or _planner.is_available()) else "Deterministic"
 current_stage = last_result.get("current_stage", "strategy").replace("_", " ").title()
 st.sidebar.markdown(f"**Mode:** `{mode}`")
 st.sidebar.markdown(f"**Stage:** `{current_stage}`")
@@ -374,7 +376,7 @@ def page_chat() -> None:
     )
     top_cols[1].metric(
         "Guidance Mode",
-        "OpenAI" if last_result.get("llm_guidance", {}).get("enabled") else "Deterministic",
+        "OpenAI" if (last_result.get("llm_guidance", {}).get("enabled") or _planner.is_available()) else "Deterministic",
     )
     top_cols[2].metric(
         "Baseline Data",
